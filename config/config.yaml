@@ -1,0 +1,159 @@
+#raw reference genome data (required input!)
+#-------------------------------------------
+assembly_id: 'GCF_000002035.6_GRCz11'
+mitochondrial_accession: 'NC_002333.2'
+mitochondrial_tRNAs_from_mt_tRNADB: 'raw/references/tRNAdb/mit_from_tRNAdb.fst'
+hc_genomic_tRNAs_from_GtRNAdb: 'raw/references/danRer11-tRNAs/danRer11-mature-tRNAs.fa'
+downloaded_tRNAscanSE_summary: 'raw/references/danRer11-tRNAs/danRer11-tRNAs-detailed.out'
+downloaded_tRNAscanSE_name_mapping: 'raw/references/danRer11-tRNAs/danRer11-tRNAs_name_map.txt'
+housekeeping_refs: 'raw/references/houskeeping.fa' #TODO: currently deactivated; see rules in mapping.smk
+
+#processed reference genome
+#-------------------------
+ref_fasta_folder: 'resources/references/non-redundant'
+genomic_refs: 'resources/references/non-redundant/genomic_fullScan.fa' # "all" tRNAscanSE predictions
+genomic_split_hc_refs: 'resources/references/non-redundant/genomic_fullScan_highconfidence.fa'
+genomic_split_additional_refs: 'resources/references/non-redundant/genomic_fullScan_additional.fa'
+genomicBS_refs: 'resources/references/non-redundant/genomicBS_fullScan.fa'
+#genomic_refs: 'resources/references/non-redundant/genomic_hc.fa' # highconfidence tRNAscanSE predictions
+#genomicBS_refs: 'resources/references/non-redundant/genomicBS_hc.fa'
+mitochondrial_refs: 'resources/references/non-redundant/mitochondrial_tRNADB.fa'
+#mitochondrial_refs: 'resources/references/non-redundant/mitochondrial_gff.fa' # annotation errors!
+#housekeeping_refs: 'resources/references/non-redundant/housekeeping.fa'
+all_tRNAs_refs: 'resources/references/non-redundant/tRNAs.fa'
+seleceted_refs: 'resources/references/selected_refs.fa'
+manual_refs: 'resources/references/manual_refs.fa'
+
+#tRNA covariance model data (required input!)
+#--------------------------------------------
+min_raw_abundance_count_for_alignment: [['max all count', 10]]
+min_raw_abundance_refs: 'resources/references/min_raw_abundance_tRNAs.fa'
+rfam_alignment: 'raw/canonical_tRNA/RF00005.stockholm.txt'
+rfam_cm: 'raw/canonical_tRNA/RF00005.cm'
+canonical_positions_rfam_alignment : ["1", "2", "3", "4", "5", "6", "7", "8", "-",
+         "9", "-", "10", "11", "12", "13", "14", "15", "16", "17", "-", "17a",
+         "18", "19", "20", "20a", "20b", "-", "21", "22", "23", "24", "25",
+         "26", "-", "27", "-", "28", "29", "30", "31", "32", "-", "33", "34",
+         "35", "36", "37", "38", "39", "40", "41", "42", "-", "43", "44", "45",
+         "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "e",
+         "e", "e", "e", "e", "e", "e", "e", "e", "e", "e", "46", "47", "-",
+         "-", "48", "49", "50", "51", "-", "52", "53", "54", "-", "55", "56",
+         "57", "-", "58", "59", "-", "60", "61", "62", "63", "64", "-", "65",
+         "-", "66", "67", "68", "69", "70", "71", "72", "-", "73"] #currently not used
+
+#refernce alignments
+#-------------------
+mitochondrial_alignment: 'resources/references/alignment/mitochondrial.fa'
+genomic_hc_alignment: 'resources/references/alignment/genomic_hc.fa'
+genomic_additional_alignment: 'resources/references/alignment/genomic_additional.fa'
+all_tRNAs_alignment: 'resources/references/alignment/tRNAs.fa'
+min_raw_abundance_alignment: 'resources/references/alignment/min_raw_abundance_tRNAs.fa'
+selected_alignment: 'resources/references/alignment/selected_tRNAs.fa'
+
+
+# canonical_positions in alignment
+# 20a, 20b, 17a, 45-46
+
+#samples (required input!)
+#-------------------------
+samples_tsv: 'config/samples.tsv'
+#samples_tsv: 'config/samples-7006.tsv'
+#samples_tsv: 'config/samples_noBS.tsv'
+#samples_tsv: 'config/samples_dm.tsv'
+raw_reads_folder: 'raw/raw_reads'
+
+#reads preprocessing
+#-------------------
+
+#max ployT after BS in ref: 18 in Lys-NNN-690; 15 in Phe-NNN-111; 13 in Leu-NNN-504 and Gly-NNN-1183;
+#max polyT after BS in high confidence refs: 10 in Ser and Leu
+#max ployT in DM in high confidence: 5 (Lys,Gly,Pro)
+#max ployT in DM in all ref: 8
+
+
+#mapping index
+#-------------
+index: 'resources/index/full.idx'
+bs_index:
+  ct: 'resources/index/full.ctidx'
+  ga: 'resources/index/full.gaidx'
+selected_index: 'resources/index/selected.idx'
+selected_bs_index:
+  ct: 'resources/index/selected.ctidx'
+  ga: 'resources/index/selected.gaidx'
+
+
+#min coverage cutoff after random assignment for getting high coverage refernces
+#-------------------------------------------------------------------------------
+#min_coverage_per_ref: [['max all count', 500],['max unique count', 20]] # connected with or
+#min_coverage_per_ref: [['max max fraction', 0.0005],['max max count', 500]] # connected with or
+min_coverage_per_ref: [['max max fraction', 0.0005]] # connected with or
+
+
+
+#clustering
+#----------
+cluster_method: 'editdist'
+editdist_cluster_cutoff: 4
+toplevel_multimapper_cluster_fraction: 0.5
+
+
+#percentage cutoff for minimum refernce set computation
+#----------------------------------------------------
+#max_coverage_selection_cutoff: 10
+
+#reads_prefilter
+reads_filter: 'umi' # 'umi', 'none', 'cigar', umicigar
+#reads_filter: 'none'
+
+#abundance analysis
+abundance_score: 'random fraction'
+abundance_heatmap_cutoff: 0.002
+manual_cluster_recovery: ['SeC-TCA[1.0](14)']
+clusters_to_remove: [26,25,20,13,10] #'Gly-CCC(26)', 'Lys-CTT(25)','Thr-AGT(10)'', and Ser-CGA(13)]
+
+# reference set to use
+ref_set: 'selected' # 'raw', 'selected'
+#ref_set: 'raw'
+
+
+
+
+
+#coverage plot
+cov_plot:
+  min_coverage: 1000
+replicate_markes: ['o', 's', '^', 'X', '+', 'D']
+#replicate_markes: ['o', 'o', 'o', 'o', 'o', 'o']
+
+
+# probes_scan
+#------------
+probes_tsv: 'config/probes.tsv'
+intarna_args: [
+        "-n",
+        "3", # max number of prdicted suboptimals
+        "--outOverlap",
+        "Q", # allowed in both ... B; allowed in none ... N
+        "--outMaxE",
+        "0",
+        "--outDeltaE",
+        "6",
+        "--noseed",
+        "--tAccW",
+        "0",
+        "--tAccL",
+        "0",
+        "--qAccW",
+        "0",
+        "--qAccL",
+        "0",
+        "--mode",
+        "M",  # M ... exact mode; H ... heuristic, default
+        "--model",
+        "S",  # S ... single side, mfe; X ... single side, mfe, seed extension
+        "--tIntLenMax",
+        "30",
+        "--qIntLenMax",
+        "30",
+    ]
