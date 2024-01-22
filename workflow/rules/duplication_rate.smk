@@ -63,5 +63,3 @@ rule duplication_rate:
         df.to_csv(output.tsv,
                  sep = '\t',
                  index=True)
-
-        print(df.head())

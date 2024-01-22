@@ -7,8 +7,6 @@ from sklearn.preprocessing import StandardScaler
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sn
-import timeimport pandas as pd
-
 
 def plot_explained_variance(data, path):
 
