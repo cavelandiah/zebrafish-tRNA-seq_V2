@@ -85,7 +85,7 @@ rule get_min_cov_refs_for_alignment:
 rule get_min_raw_coverage_fasta: # cm align can not align more than 10 000 seqeunces at a time so prefiltering is needed,TODO: change to reuse functions in coverage.smk
     input:
         min_cov_ids = 'resources/min_coverage_refs/pre-filter_umi/min_cov_refs_alignment.yaml',
-        tRNAs_fa = config['all_tRNAs_refs']
+        tRNAs_fa = 'resources/references/all_refs.fa'
     output:
         fasta = config['min_raw_abundance_refs']
     run:
@@ -161,6 +161,9 @@ rule add_CCA_to_alignment:
                 if record.id in selected_refs:
                     selected_out.write('>' + record.id + '\n')
                     selected_out.write(str(seq) + '\n')
+                if '/' in record.id:
+                    selected_out.write('>' + record.id + '\n')
+                    selected_out.write(str(seq) + '\n')
 
         SeqIO.write(extended_sequences, output.minimal_coverage_alignment, "fasta")
 
@@ -168,15 +171,63 @@ rule add_CCA_to_alignment:
 rule get_sorted_selected_alignment:
     input:
         selected_alignment = config['selected_alignment'],
+        selected_ids = 'resources/min_coverage_refs/pre-filter_'+config['reads_filter']+'/min_cov_refs.yaml',
     output:
         selected_alignment = config['selected_alignment']+'_sorted.fa',
     run:
         from Bio import SeqIO
         from Bio.SeqRecord import SeqRecord
+        import yaml
+
+        with open(input.selected_ids) as file:
+            selected_refs = yaml.safe_load(file)
 
         with open(output.selected_alignment, 'w') as selected_out:
             records = list(SeqIO.parse(input.selected_alignment, "fasta"))
             records = sorted(records, key = lambda record: record.id)
             for record in records:
-                selected_out.write('>' + record.id + '\n')
-                selected_out.write(str(record.seq) + '\n')
+                if record.id in selected_refs:
+                    selected_out.write('>' + record.id + '\n')
+                    selected_out.write(str(record.seq) + '\n')
+
+rule align_manual_refs_to_cm:
+    input:
+        rfam_alignment = config['rfam_alignment'],
+        cm = config['rfam_cm'],
+        fasta = 'resources/references/non-redundant/manual-noCCA.fa',
+    output:
+        manual_alignment = 'resources/references/alignment/manual_tRNAs_noCCA.fa'
+    threads: 4
+    run:
+        import os
+        import subprocess
+        import shutil
+
+        call_args = ['cmalign',
+                     '--mapali', input.rfam_alignment,
+                     '--outformat', 'AFA',
+                     #'--outformat', 'Stockholm',
+                     #'--outformat', 'Pfam',
+                     '-o', output.manual_alignment ,
+                     '--cpu', str(threads),
+                     '-g',
+                    input.cm,
+                    input.fasta,
+                    ]
+
+        subprocess.run(call_args)
+
+rule add_CCA_to_manual_alignment:
+    input:
+        manual_alignment = 'resources/references/alignment/manual_tRNAs_noCCA.fa'
+    output:
+        manual_alignment = 'resources/references/alignment/manual_tRNAs.fa'
+    run:
+        from Bio import SeqIO
+        from Bio.SeqRecord import SeqRecord
+
+        with open(output.manual_alignment, 'w') as output_fasta:
+            for record in SeqIO.parse(input.manual_alignment, "fasta"):
+                seq = record.seq+'CCA'
+                output_fasta.write('>' + record.id + '\n')
+                output_fasta.write(str(seq) + '\n')

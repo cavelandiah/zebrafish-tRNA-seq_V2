@@ -1,10 +1,21 @@
+
+import pandas as pd
+
+
+def aggregate_fasta_files_for_all_accessions(wildcards):
+    assembly_report_file = str(checkpoints.get_assembly_report_from_ncbi.get(assembly_id=config['assembly_id']).output)
+    accessions = pd.read_csv(assembly_report_file, sep = '\t', comment='#', usecols = [6,9], names = ['accession', 'chromosom'], index_col=False)['accession'].to_list()
+    genomic_fasta_files = [f"resources/references/genome/{accession}.fa" for accession in accessions]
+    return genomic_fasta_files
+
+
 rule download_genome_annotations_as_gff_gz:
     input:
     output: 'resources/references/genome_annotations/{assembly_id}_genomic.gff.gz'
     shell:
         'wget -O {output} https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_other/Danio_rerio/latest_assembly_versions/{wildcards.assembly_id}/{wildcards.assembly_id}_genomic.gff.gz'
 
-'''
+
 rule fasta_files_from_ncbi_by_accession:
     input:
     output:
@@ -27,15 +38,20 @@ rule fasta_files_from_ncbi_by_accession:
             r = SeqIO.write(sequence, fasta_handle, "fasta")
             if r != 1:
                 print("Error while writing sequence:  " + sequence.id)
-'''
 
-rule get_assembly_report_from_ncbi:
-# assmbly report includes information for mapping chromosome ids to accession numbers
+
+
+checkpoint get_assembly_report_from_ncbi:
+# assembly report includes information for mapping chromosome ids to accession numbers
     input:
     output:
         fasta_file = "resources/references/genome/{assembly_id}_assembly_report.txt"
+    #wildcard_constraints:
+    #    assembly_id ="[GCF_000002035.6_GRCz11]+"
     shell:
         'wget -O {output} https://ftp.ncbi.nlm.nih.gov/genomes/refseq/vertebrate_other/Danio_rerio/latest_assembly_versions/{wildcards.assembly_id}/{wildcards.assembly_id}_assembly_report.txt'
+
+
 
 rule get_mitochondrial_tRNAs_from_gff:
     input:
@@ -232,7 +248,7 @@ rule get_all_genomic_tRNAs_from_tRNAscanSE:
         scan_tsv = config['downloaded_tRNAscanSE_summary'],
         tRNA_name_map = config['downloaded_tRNAscanSE_name_mapping'],
         chromosom_accession_map = "resources/references/genome/"+config['assembly_id']+"_assembly_report.txt",
-        genomic_fasta_files = expand("resources/references/genome/{accession}.fa", accession = pd.read_csv("resources/references/genome/"+config['assembly_id']+"_assembly_report.txt", sep = '\t', comment='#', usecols = [6,9], names = ['accession', 'chromosom'], index_col=False)['accession'].to_list())
+        genomic_fasta_files = aggregate_fasta_files_for_all_accessions
     output:
         non_redundant_fa = 'resources/references/non-redundant/genomic_fullScan.fa',
         non_redundant_fa_highconfidence = 'resources/references/non-redundant/genomic_fullScan_highconfidence.fa',
@@ -428,25 +444,22 @@ rule get_all_genomic_tRNAs_from_tRNAscanSE:
 
 
 
-
-
-
 rule get_merged_tRNA_refs:
     input:
         genomic = config['genomic_refs'],
         mitochondrial = config['mitochondrial_refs']
     output:
-        config['all_tRNAs_refs']
+        'resources/references/all_refs.fa'
     shell:
         "cat {input.genomic} {input.mitochondrial} > {output}"
 
 
-rule get_slected_refs:
+rule get_selected_refs:
     input:
         min_cov_ids = 'resources/min_coverage_refs/pre-filter_'+config['reads_filter']+'/min_cov_refs.yaml',
-        tRNAs_fa = config['all_tRNAs_refs']
+        tRNAs_fa = 'resources/references/all_refs.fa'
     output:
-        fasta = config['seleceted_refs']
+        fasta = 'resources/references/selected_refs.fa'
     run:
         import yaml
         from Bio import SeqIO
@@ -461,3 +474,32 @@ rule get_slected_refs:
                 filtered_sequences.append(record)
 
         SeqIO.write(filtered_sequences, output.fasta, "fasta")
+
+rule remove_CCA_from_manual_refs:
+    input:
+        fasta = config['raw_manual_refs']
+    output:
+        fasta = 'resources/references/non-redundant/manual-noCCA.fa',
+    run:
+        from Bio import SeqIO
+        from Bio.SeqRecord import SeqRecord
+        with open(output.fasta, 'w') as output_fasta:
+            for record in SeqIO.parse(input.fasta, "fasta"):
+                seq = str(record.seq[0:-3]).upper().replace('U', 'T')
+                output_fasta.write('>' + record.id + '\n')
+                output_fasta.write(seq + '\n')
+
+
+rule copy_manual_refs:
+    input:
+        fasta = config['raw_manual_refs']
+    output:
+        fasta = 'resources/references/manual_refs.fa',
+    run:
+        from Bio import SeqIO
+        from Bio.SeqRecord import SeqRecord
+        with open(output.fasta, 'w') as output_fasta:
+            for record in SeqIO.parse(input.fasta, "fasta"):
+                seq = str(record.seq).upper().replace('U', 'T')
+                output_fasta.write('>' + record.id + '\n')
+                output_fasta.write(seq + '\n')

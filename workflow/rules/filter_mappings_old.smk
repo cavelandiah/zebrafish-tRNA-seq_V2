@@ -1,60 +1,34 @@
-rule get_raw_mapped_and_remove_BS_GAtransitions:
+rule get_raw_mapped:
     input:
         #sam = 'resources/mapping/{sample}.sam',
-        sam = 'resources/mapping/all/polyTtrimming_ONtttt/{sample}.sam'
+        sam = 'resources/mapping/all/polyTtrimming_ON/{sample}.sam'
     output:
         sam = 'resources/filtered-mappings/pre-filter_none/raw/mapped/{sample}.sam'
     run:
         import pandas as pd
         import numpy as np
-
-        if sample_dict[wildcards.sample]['treatment'] == 'BS':
-            cols = [
-                ["QNAME", 0, "category"],
-                #["FLAG", 1, np.int16],
-                ["RNAME", 2, "category"],
-                ["POS", 3, np.int16],
-                #["MAPQ", 4, np.int16],
-                ["CIGAR", 5, "category"],
-                #["MRNM/RNEXT", 6, "category"],
-                #["MPOS/PNEXT", 7, np.int16],
-                #["ISIZE/TLEN", 8, np.int16],
-                ["SEQ", 9, "category"],
-                #["QUAL", 10, "category"],
-                #["TAGs0", 11, "category"],
-                #["TAGs1", 12, "category"],
-                #["TAGs2", 13, "category"],
-                #["TAGs3", 14, "category"],
-                #["TAGs4", 15, "category"],
-                #["TAGs5", 16, "category"],
-                ["TAGs6", 17, "category"],
-                #["TAGs7", 18, "category"],
-                #["TAGs8", 19, "category"]
-               ]
-        else:
-            cols = [
-                ["QNAME", 0, "category"],
-                #["FLAG", 1, np.int16],
-                ["RNAME", 2, "category"],
-                ["POS", 3, np.int16],
-                #["MAPQ", 4, np.int16],
-                ["CIGAR", 5, "category"],
-                #["MRNM/RNEXT", 6, "category"],
-                #["MPOS/PNEXT", 7, np.int16],
-                #["ISIZE/TLEN", 8, np.int16],
-                ["SEQ", 9, "category"],
-                #["QUAL", 10, "category"],
-                #["TAGs0", 11, "category"],
-                #["TAGs1", 12, "category"],
-                #["TAGs2", 13, "category"],
-                #["TAGs3", 14, "category"],
-                #["TAGs4", 15, "category"],
-                #["TAGs5", 16, "category"],
-                #["TAGs6", 17, "category"],
-                #["TAGs7", 18, "category"],
-                #["TAGs8", 19, "category"]
-               ]
-
+        cols = [
+            ["QNAME", 0, "category"],
+            #["FLAG", 1, np.int16],
+            ["RNAME", 2, "category"],
+            ["POS", 3, np.int16],
+            #["MAPQ", 4, np.int16],
+            ["CIGAR", 5, "category"],
+            #["MRNM/RNEXT", 6, "category"],
+            #["MPOS/PNEXT", 7, np.int16],
+            #["ISIZE/TLEN", 8, np.int16],
+            ["SEQ", 9, "category"],
+            #["QUAL", 10, "category"],
+            #["TAGs0", 11, "category"],
+            #["TAGs1", 12, "category"],
+            #["TAGs2", 13, "category"],
+            #["TAGs3", 14, "category"],
+            #["TAGs4", 15, "category"],
+            #["TAGs5", 16, "category"],
+            #["TAGs6", 17, "category"],
+            #["TAGs7", 18, "category"],
+            #["TAGs8", 19, "category"]
+           ]
         col_nr = [ col[1] for col in cols ]
         col_names = [ col[0] for col in cols ]
         data_typ_dict = {}
@@ -71,13 +45,6 @@ rule get_raw_mapped_and_remove_BS_GAtransitions:
         header=None,
         )
         df = df[df["RNAME"] != "*"]
-
-        if sample_dict[wildcards.sample]['treatment'] == 'BS':
-            # drop any mappings to GA index
-            df['CT'] = df.apply(lambda row: row["TAGs6"].endswith('CT'), axis =1 )
-            df = df[df["CT"]]
-            df.drop(columns = ['CT', 'TAGs6'], inplace = True)
-
         df.to_csv(output.sam, sep="\t", index=False)
 
 
@@ -165,9 +132,9 @@ rule filter_umicigar:
 
 rule get_uniquely_mapped:
     input:
-        sam = 'resources/filtered-mappings/pre-filter_{reads_filter}/raw/mapped/{sample}.sam'
+        sam = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/raw/mapped/{sample}.sam'
     output:
-        sam = 'resources/filtered-mappings/pre-filter_{reads_filter}/raw/unique/{sample}.sam'
+        sam = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/raw/unique/{sample}.sam'
     run:
         import pandas as pd
         df = pd.read_csv(
@@ -181,9 +148,9 @@ rule get_uniquely_mapped:
 
 rule get_random_mapped:
     input:
-        sam = 'resources/filtered-mappings/pre-filter_{reads_filter}/raw/mapped/{sample}.sam'
+        sam = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/raw/mapped/{sample}.sam'
     output:
-        sam = 'resources/filtered-mappings/pre-filter_{reads_filter}/raw/random/{sample}.sam'
+        sam = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/raw/random/{sample}.sam'
     run:
         import pandas as pd
         df = pd.read_csv(
@@ -197,11 +164,11 @@ rule get_random_mapped:
 
 rule get_coverage_per_ref:
     input:
-        unique = 'resources/filtered-mappings/pre-filter_{reads_filter}/raw/unique/{sample}.sam',
-        random = 'resources/filtered-mappings/pre-filter_{reads_filter}/raw/random/{sample}.sam',
-        all = 'resources/filtered-mappings/pre-filter_{reads_filter}/raw/mapped/{sample}.sam'
+        unique = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/raw/unique/{sample}.sam',
+        random = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/raw/random/{sample}.sam',
+        all = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/raw/mapped/{sample}.sam'
     output:
-        tsv = 'resources/coverage/pre-filter_{reads_filter}/raw/per-ref/{sample}.tsv'
+        tsv = 'resources/coverage/pre-filter_'+config['reads_filter']+'/raw/per-ref/{sample}.tsv'
     run:
         df_uni = pd.read_csv(
         input.unique,
@@ -287,12 +254,12 @@ rule max_coverage_mapped:
 
 rule get_coverage_per_selected_ref_with_max:
     input:
-        unique = 'resources/filtered-mappings/pre-filter_{reads_filter}/raw/unique/{sample}.sam',
-        random = 'resources/filtered-mappings/pre-filter_{reads_filter}/raw/random/{sample}.sam',
-        all = 'resources/filtered-mappings/pre-filter_{reads_filter}/raw/mapped/{sample}.sam',
-        max_cov_hc = 'resources/filtered-mappings/pre-filter_{reads_filter}/raw/max-coverage_cutoff-1_high-confidence-on/{sample}.sam',
+        unique = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/raw/unique/{sample}.sam',
+        random = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/raw/random/{sample}.sam',
+        all = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/raw/mapped/{sample}.sam',
+        max_cov_hc = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/raw/max-coverage_cutoff-1_high-confidence-on/{sample}.sam',
     output:
-        tsv = 'resources/coverage/pre-filter_{reads_filter}/raw/per-ref-with-max/{sample}.tsv'
+        tsv = 'resources/coverage/pre-filter_'+config['reads_filter']+'/raw/per-ref-with-max/{sample}.tsv'
     run:
         df_uni = pd.read_csv(
         input.unique,
@@ -345,9 +312,9 @@ rule get_coverage_per_selected_ref_with_max:
 
 rule get_coverage_summary:
     input:
-        expand('resources/coverage/pre-filter_{reads_filter}/raw/per-ref/{sample}.tsv', reads_filter='{reads_filter}',sample=dm_samples)
+        expand('resources/coverage/pre-filter_'+config['reads_filter']+'/raw/per-ref/{sample}.tsv', sample=dm_samples)
     output:
-        tsv = 'resources/coverage/pre-filter_{reads_filter}/raw/coverage_summary_DM.tsv'
+        tsv = 'resources/coverage/pre-filter_'+config['reads_filter']+'/raw/coverage_summary_DM.tsv'
     run:
         summary_df =  pd.DataFrame()
         for file in input:
@@ -369,9 +336,9 @@ rule get_coverage_summary:
 
 rule get_coverage_summary_with_max:
     input:
-        expand('resources/coverage/pre-filter_{reads_filter}/raw/per-ref-with-max/{sample}.tsv', reads_filter='{reads_filter}', sample=dm_samples)
+        expand('resources/coverage/pre-filter_'+config['reads_filter']+'/raw/per-ref-with-max/{sample}.tsv', sample=dm_samples)
     output:
-        tsv = 'resources/coverage/pre-filter_{reads_filter}/raw/coverage_summary_DM-with-max.tsv'
+        tsv = 'resources/coverage/pre-filter_'+config['reads_filter']+'/raw/coverage_summary_DM-with-max.tsv'
     run:
         summary_df =  pd.DataFrame()
         for file in input:
@@ -393,9 +360,9 @@ rule get_coverage_summary_with_max:
 
 rule get_min_coverage_summary:
     input:
-        'resources/coverage/pre-filter_{reads_filter}/raw/coverage_summary_DM.tsv'
+        'resources/coverage/pre-filter_'+config['reads_filter']+'/raw/coverage_summary_DM.tsv'
     output:
-        'resources/coverage/pre-filter_{reads_filter}/raw/min_coverage_summary_DM.tsv'
+        'resources/coverage/pre-filter_'+config['reads_filter']+'/raw/min_coverage_summary_DM.tsv'
     run:
         df = pd.read_csv(input[0], sep="\t")
         df.set_index('RNAME', inplace = True)
@@ -409,9 +376,9 @@ rule get_min_coverage_summary:
 
 rule get_min_coverage_summary_with_max:
     input:
-        'resources/coverage/pre-filter_{reads_filter}/raw/coverage_summary_DM-with-max.tsv'
+        'resources/coverage/pre-filter_'+config['reads_filter']+'/raw/coverage_summary_DM-with-max.tsv'
     output:
-        'resources/coverage/pre-filter_{reads_filter}/raw/min_coverage_summary_DM-with-max.tsv'
+        'resources/coverage/pre-filter_'+config['reads_filter']+'/raw/min_coverage_summary_DM-with-max.tsv'
     run:
         df = pd.read_csv(input[0], sep="\t")
         df.set_index('RNAME', inplace = True)
@@ -427,9 +394,9 @@ rule get_min_coverage_summary_with_max:
 
 rule get_min_cov_refs:
     input:
-        cov_sum = 'resources/coverage/pre-filter_{reads_filter}/raw/min_coverage_summary_DM-with-max.tsv'
+        cov_sum = 'resources/coverage/pre-filter_'+config['reads_filter']+'/raw/min_coverage_summary_DM-with-max.tsv'
     output:
-        keep_refs = 'resources/min_coverage_refs/pre-filter_{reads_filter}/min_cov_refs.yaml'
+        keep_refs = 'resources/min_coverage_refs/pre-filter_'+config['reads_filter']+'/min_cov_refs.yaml'
     run:
         import pandas as pd
         import yaml
@@ -449,7 +416,7 @@ rule get_min_cov_refs:
 rule get_raw_mapped_selected:
     input:
         #sam = 'resources/mapping/{sample}.sam',
-        sam = 'resources/mapping/selected/polyTtrimming_ONtttt/{sample}.sam'
+        sam = 'resources/mapping/selected/polyTtrimming_ON/{sample}.sam'
     output:
         sam = 'resources/filtered-mappings/pre-filter_none/selected/mapped/{sample}.sam'
     run:
@@ -495,37 +462,28 @@ rule get_raw_mapped_selected:
         df = df[df["RNAME"] != "*"]
         df.to_csv(output.sam, sep="\t", index=False)
 
-rule filter_umi_on_selected:
+rule get_mapped_min_cov_ref:
     input:
-        sam = 'resources/filtered-mappings/pre-filter_none/selected/mapped/{sample}.sam'
+        sam = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/raw/mapped/{sample}.sam',
+        selected_refs = 'resources/min_coverage_refs/pre-filter_'+config['reads_filter']+'/min_cov_refs.yaml'
     output:
-        sam = 'resources/filtered-mappings/pre-filter_umi/selected/mapped/{sample}.sam'
+        sam = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/selected/mapped/{sample}.sam'
     run:
         import pandas as pd
-        df = pd.read_csv(
-        input.sam,
-        sep="\t",
-        )
-        header = True
-        mode = 'w'
-        i=0
-        for read, g_df in df.groupby('SEQ'):
-            g_df['umi'] = g_df.apply(lambda row: row['QNAME'].split('_')[-1], axis =1)
-            g_df.drop_duplicates(subset=['umi', 'RNAME'], inplace = True, keep= 'first')
-
-            g_df.to_csv(output.sam,
-                         sep = '\t',
-                         index=False,
-                         header=header,
-                         mode=mode)
-            header = False
-            mode = 'a'
+        import yaml
+        df = pd.read_csv(input.sam, sep="\t")
+        with open(input.selected_refs) as file:
+            refs = yaml.safe_load(file)
+        df=df[df['RNAME'].isin(refs)]
+        df.to_csv(output.sam,
+                     sep = '\t',
+                     index=False)
 
 rule get_mapped_min_cov_ref_random:
     input:
-        sam = 'resources/filtered-mappings/pre-filter_{reads_filter}/selected/mapped/{sample}.sam',
+        sam = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/selected/mapped/{sample}.sam',
     output:
-        sam = 'resources/filtered-mappings/pre-filter_{reads_filter}/selected/random/{sample}.sam'
+        sam = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/selected/random/{sample}.sam'
     run:
         import pandas as pd
         df = pd.read_csv(
@@ -540,9 +498,9 @@ rule get_mapped_min_cov_ref_random:
 
 rule get_mapped_min_cov_ref_unique:
     input:
-        sam = 'resources/filtered-mappings/pre-filter_{reads_filter}/selected/mapped/{sample}.sam',
+        sam = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/selected/mapped/{sample}.sam',
     output:
-        sam = 'resources/filtered-mappings/pre-filter_{reads_filter}/selected/unique/{sample}.sam'
+        sam = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/selected/unique/{sample}.sam'
     run:
         import pandas as pd
         df = pd.read_csv(
@@ -558,11 +516,11 @@ rule get_mapped_min_cov_ref_unique:
 
 rule get_coverage_per_selected_ref:
     input:
-        unique = 'resources/filtered-mappings/pre-filter_{reads_filter}/selected/unique/{sample}.sam',
-        random = 'resources/filtered-mappings/pre-filter_{reads_filter}/selected/random/{sample}.sam',
-        all = 'resources/filtered-mappings/pre-filter_{reads_filter}/selected/mapped/{sample}.sam'
+        unique = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/selected/unique/{sample}.sam',
+        random = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/selected/random/{sample}.sam',
+        all = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/selected/mapped/{sample}.sam'
     output:
-        tsv = 'resources/coverage/pre-filter_{reads_filter}/selected/per-ref/{sample}.tsv'
+        tsv = 'resources/coverage/pre-filter_'+config['reads_filter']+'/selected/per-ref/{sample}.tsv'
     run:
         df_uni = pd.read_csv(
         input.unique,
@@ -592,7 +550,6 @@ rule get_coverage_per_selected_ref:
         total_unique_read_count = df['unique count'].sum()
         total_random_read_count = df['random count'].sum()
         total_all_read_count = df['all count'].sum()
-        df['unique fraction (norm all)'] = df.apply(lambda row: row['unique count']/total_random_read_count, axis =1)
         df['unique fraction'] = df.apply(lambda row: row['unique count']/total_unique_read_count, axis =1)
         df['random fraction'] = df.apply(lambda row: row['random count']/total_random_read_count, axis =1)
         df['all fraction'] = df.apply(lambda row: row['all count']/total_all_read_count, axis =1)
@@ -611,9 +568,9 @@ rule get_coverage_per_selected_ref:
 
 rule get_coverage_summary_selected:
     input:
-        expand('resources/coverage/pre-filter_{reads_filter}/selected/per-ref/{sample}.tsv', reads_filter='{reads_filter}',sample=dm_samples)
+        expand('resources/coverage/pre-filter_'+config['reads_filter']+'/selected/per-ref/{sample}.tsv', sample=dm_samples)
     output:
-        tsv = 'resources/coverage/pre-filter_{reads_filter}/selected/coverage_summary_DM.tsv'
+        tsv = 'resources/coverage/pre-filter_'+config['reads_filter']+'/selected/coverage_summary_DM.tsv'
     run:
         summary_df =  pd.DataFrame()
         for file in input:
@@ -632,37 +589,12 @@ rule get_coverage_summary_selected:
         summary_df.to_csv(output.tsv,
                          sep = '\t',
                          index=True)
-
-rule get_coverage_summary_selected_mock:
-    input:
-        expand('resources/coverage/pre-filter_{reads_filter}/selected/per-ref/{sample}.tsv', reads_filter='{reads_filter}',sample=SAMPLES)
-    output:
-        tsv = 'resources/coverage/pre-filter_{reads_filter}/selected/coverage_summary_all.tsv'
-    run:
-        summary_df =  pd.DataFrame()
-        for file in input:
-            sample = file.split('/')[-1].replace('.tsv','')
-            df = pd.read_csv(
-            file,
-            sep="\t",
-            )
-            df.set_index('RNAME', inplace = True)
-            df.columns = [sample + ' ' +  column if column != 'anticodon' else column for column in df.columns]
-            if len(summary_df) == 0:
-                summary_df = df
-            else:
-                df.drop(['anticodon'], inplace = True, axis = 1)
-                summary_df = pd.concat([summary_df, df], axis=1)
-        summary_df.to_csv(output.tsv,
-                         sep = '\t',
-                         index=True)
-
 
 rule get_min_coverage_summary_selected:
     input:
-        'resources/coverage/pre-filter_{reads_filter}/{ref_set}/coverage_summary_DM.tsv'
+        'resources/coverage/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/coverage_summary_DM.tsv'
     output:
-        'resources/coverage/pre-filter_{reads_filter}/{ref_set}/min_coverage_summary_DM.tsv'
+        'resources/coverage/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/min_coverage_summary_DM.tsv'
     run:
         df = pd.read_csv(input[0], sep="\t")
         df.set_index('RNAME', inplace = True)

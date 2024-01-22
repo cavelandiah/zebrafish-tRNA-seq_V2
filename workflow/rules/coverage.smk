@@ -1,15 +1,12 @@
 rule per_ref_nt_count:
     input:
-        sam = 'resources/filtered-mappings/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/random/{sample}.sam',
-        ref_fasta = config['min_raw_abundance_refs'],
-        alignment_fa = config['min_raw_abundance_alignment'],
-        cluster_map = 'resources/cluster/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM.yaml',
+        sam = 'resources/filtered-mappings/pre-filter_{reads_filter}/{ref_set}/random/{sample}.sam',
+        ref_fasta = 'resources/references/{ref_set}_refs.fa',
+        alignment_fa = 'resources/references/alignment/{ref_set}_tRNAs.fa',
+        cluster_map = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}.yaml',
     output:
-        tsv =  'resources/coverage_counts/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/{sample}.tsv'
+        tsv =  'resources/coverage_counts/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}/{sample}.tsv'
     run:
-        import sys
-        sys.path.append("../")
-        import scripts.utils as ut
         import pandas as pd
         import os
         from Bio import SeqIO
@@ -184,7 +181,6 @@ rule per_ref_nt_count:
                 if nt in nt_count_df_transposed.columns:
                     nt_count_df_transposed['all nts'] = nt_count_df_transposed[nt] + nt_count_df_transposed['all nts']
             nt_count_df_transposed['RPM at position'] = nt_count_df_transposed.apply(lambda row: row['all nts']*1000000/total_reads, axis=1)
-
             nt_count_df_transposed['mismatch'] = 0
             for nt in ['a', 'c', 'g', 't', 'u', '-', 'n']:
                 if nt in nt_count_df_transposed.columns:
@@ -209,7 +205,12 @@ rule per_ref_nt_count:
                                                   axis =1)
             nt_count_df_transposed['m5C fraction'] = nt_count_df_transposed.apply(lambda row: row['C']/(row['C']+row['T']) if row['ref_nt'] in ['C', 'c'] and (row['C']+row['T'])>0 else 0,
                                                         axis =1)
-
+            if '-' not in nt_count_df_transposed.columns:
+                nt_count_df_transposed['-']=0
+            if '>' not in nt_count_df_transposed.columns:
+                nt_count_df_transposed['>']=0
+            nt_count_df_transposed['stop fraction'] = nt_count_df_transposed.apply(
+                lambda row: row['>']/(row['all nts']+row['-']+row['>']) if (row['all nts']+row['-']+row['>']) >0 else 0, axis=1)
             data.append(nt_count_df_transposed)
 
 
@@ -220,67 +221,123 @@ rule per_ref_nt_count:
 
 rule per_cluster_nt_count:
     input:
-        tsv =  'resources/coverage_counts/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/{sample}.tsv'
+        tsv =  'resources/coverage_counts/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}/{sample}.tsv'
     output:
-        cluster_tsv =  'resources/coverage_counts/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/{sample}_per_{group}.tsv'
+        cluster_tsv =  'resources/coverage_counts/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}/{sample}_per_{group}.tsv'
     run:
         import pandas as pd
         import numpy as np
 
-        df = pd.read_csv(input.tsv, sep = '\t')
+        df = pd.read_csv(input.tsv, sep="\t")
 
-        total_reads = df['reads in sample'].to_list()[0]
+        total_reads = df["reads in sample"].to_list()[0]
 
-        df['T on refC'] = df.apply(lambda row: row['T'] if row['ref_nt'] == 'C' else np.nan, axis = 1)
-        df['C on refC'] = df.apply(lambda row: row['C'] if row['ref_nt'] == 'C' else np.nan, axis = 1)
+        df["T on refC"] = df.apply(
+            lambda row: row["T"] if row["ref_nt"] == "C" else np.nan, axis=1
+        )
+        df["C on refC"] = df.apply(
+            lambda row: row["C"] if row["ref_nt"] == "C" else np.nan, axis=1
+        )
 
-        print(df.columns)
         data = []
+        #group by cluster or anticodon
         groups = df.groupby(wildcards.group)
         for group, gdf in groups:
-            #print(group)
-            #print(gdf.dtypes)
-            gdf = gdf.astype({'align_pos': str, 'canonical_pos': str})
 
+            # convert position descriptors to strings
+            gdf = gdf.astype({"align_pos": str, "canonical_pos": str})
+
+            # for each position within the cluster get refernce composition
             ref_count_dict = {}
-            for p, x_df in gdf.groupby('align_pos'):
-                #ref_nts = x_df['ref_nt'].value_counts().to_dict()
-                ref_nts = x_df.groupby('ref_nt')['all nts'].sum().to_dict()
-                #print(ref_nts )
+            for p, x_df in gdf.groupby("align_pos"):
+                ref_nts = x_df.groupby("ref_nt")["all nts"].sum().to_dict()
                 ref_count_dict[p] = ref_nts
 
-            p_df = gdf.groupby(['align_pos', 'canonical_pos']).sum()
+            # sum coverage counts for equivalent positions within the cluster
+            p_df = gdf.groupby(["align_pos", "canonical_pos"]).sum()
 
-            p_df.reset_index(inplace = True)
-            p_df.drop(columns = 'ref_pos', inplace = True)
-
-            p_df['mismatch fraction'] = p_df.apply(lambda row: row['mismatch']/(row['mismatch']+row['match']) if row['mismatch'] >0 else 0,
-                                                  axis =1)
-            p_df['stop+mismatch fraction'] = p_df.apply(lambda row: (row['>']+row['mismatch'])/(row['>']+row['mismatch']+row['match']) if row['mismatch'] >0 else 0,
-                                                  axis =1)
-            p_df['read start fraction'] = p_df.apply(lambda row: row['>']/row['all reads'],
-                                                  axis =1)
-            p_df['read end fraction'] = p_df.apply(lambda row: row['<']/row['all reads'],
-                                                  axis =1)
-            p_df['C vs C+T'] = p_df.apply(lambda row: row['C']/(row['C']+row['T']) if (row['C']+row['T'])>0 else np.nan,
-                                                        axis =1)
-
+            # reintroduce cluster or anticodon lable
             p_df[wildcards.group] = group
-            for nt in list(set(gdf['ref_nt'].to_list())):
-                p_df['ref_'+str(nt)] = p_df.apply(lambda row: ref_count_dict[row['align_pos']][nt] if nt in ref_count_dict[row['align_pos']].keys() else 0 , axis = 1)
-            p_df['ref C / (C+T)'] = p_df.apply(lambda row:row['ref_C']/(row['ref_C']+row['ref_T']) if (row['ref_C']+row['ref_T']) >0 else 0  , axis = 1)
-            p_df['ref C / all nts'] = p_df.apply(lambda row:row['ref_C']/row['all nts'] if row['all nts'] >0 else np.nan  , axis = 1)
-            p_df['m5C fraction T based'] = p_df.apply(lambda row: 1-row['T on refC']/(row['ref_C']) if (row['ref_C'])>0 else np.nan,
-                                                        axis =1)
-            p_df['m5C fraction C based'] = p_df.apply(lambda row:row['C on refC']/(row['ref_C']) if (row['ref_C'])>0 else np.nan,
-                                                        axis =1)
-            p_df['m5C fraction'] = p_df.apply(lambda row:row['C on refC']/(row['C on refC'] + row['T on refC']) if (row['C on refC'] + row['T on refC'])>0 else np.nan,
-                                                       axis =1)
-            p_df['all reads'] =   p_df['all reads'].max()
-            p_df['RPM'] =   p_df['RPM'].max()                      
+
+            p_df.reset_index(inplace=True)
+
+            p_df.drop(columns="ref_pos", inplace=True)
+
+            # recompute features that can not be computed from individual refs as sum
+            p_df["mismatch fraction"] = p_df.apply(
+                lambda row: row["mismatch"] / (row["mismatch"] + row["match"])
+                if row["mismatch"] > 0
+                else 0,
+                axis=1,
+            )
+            p_df["stop+mismatch fraction"] = p_df.apply(
+                lambda row: (row[">"] + row["mismatch"])
+                / (row[">"] + row["mismatch"] + row["match"])
+                if row["mismatch"] > 0
+                else 0,
+                axis=1,
+            )
+            p_df["read start fraction"] = p_df.apply(
+                lambda row: row[">"] / row["all reads"], axis=1
+            )
+            p_df["read end fraction"] = p_df.apply(
+                lambda row: row["<"] / row["all reads"], axis=1
+            )
+            p_df["C vs C+T"] = p_df.apply(
+                lambda row: row["C"] / (row["C"] + row["T"])
+                if (row["C"] + row["T"]) > 0
+                else np.nan,
+                axis=1,
+            )
+
+            for nt in list(set(gdf["ref_nt"].to_list())):
+                p_df["ref_" + str(nt)] = p_df.apply(
+                    lambda row: ref_count_dict[row["align_pos"]][nt]
+                    if nt in ref_count_dict[row["align_pos"]].keys()
+                    else 0,
+                    axis=1,
+                )
+
+            p_df["ref C / (C+T)"] = p_df.apply(
+                lambda row: row["ref_C"] / (row["ref_C"] + row["ref_T"])
+                if (row["ref_C"] + row["ref_T"]) > 0
+                else 0,
+                axis=1,
+            )
+            p_df["ref C / all nts"] = p_df.apply(
+                lambda row: row["ref_C"] / row["all nts"] if row["all nts"] > 0 else np.nan,
+                axis=1,
+            )
+            p_df["m5C fraction T based"] = p_df.apply(
+                lambda row: 1 - row["T on refC"] / (row["ref_C"])
+                if (row["ref_C"]) > 0
+                else np.nan,
+                axis=1,
+            )
+            p_df["m5C fraction C based"] = p_df.apply(
+                lambda row: row["C on refC"] / (row["ref_C"]) if (row["ref_C"]) > 0 else np.nan,
+                axis=1,
+            )
+            p_df["m5C fraction"] = p_df.apply(
+                lambda row: row["C on refC"] / (row["C on refC"] + row["T on refC"])
+                if (row["C on refC"] + row["T on refC"]) > 0
+                else np.nan,
+                axis=1,
+            )
+            if '-' not in p_df.columns:
+                p_df['-']=0
+            if '>' not in p_df.columns:
+                p_df['>']=0
+            p_df['stop fraction'] = p_df.apply(
+                lambda row: row['>']/(row['all nts']+row['-']+row['>']) if (row['all nts']+row['-']+row['>']) >0 else 0, axis=1)
+
+
+
+            p_df["all reads"] = p_df["all reads"].max()
+            p_df["RPM"] = p_df["RPM"].max()
 
             data.append(p_df)
         df = pd.concat(data)
-        df['reads in sample'] = total_reads
-        print(df.head(180))
-        df.to_csv(output.cluster_tsv, sep = '\t', index=False)
+        df["reads in sample"] = total_reads
+        print(df.head(100))
+        df.to_csv(output.cluster_tsv, sep="\t", index=False)

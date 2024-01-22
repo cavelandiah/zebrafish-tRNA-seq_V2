@@ -7,6 +7,8 @@ hc_genomic_tRNAs_from_GtRNAdb: 'raw/references/danRer11-tRNAs/danRer11-mature-tR
 downloaded_tRNAscanSE_summary: 'raw/references/danRer11-tRNAs/danRer11-tRNAs-detailed.out'
 downloaded_tRNAscanSE_name_mapping: 'raw/references/danRer11-tRNAs/danRer11-tRNAs_name_map.txt'
 housekeeping_refs: 'raw/references/houskeeping.fa' #TODO: currently deactivated; see rules in mapping.smk
+raw_manual_refs: 'raw/manual.fa'
+
 
 #processed reference genome
 #-------------------------
@@ -20,9 +22,51 @@ genomicBS_refs: 'resources/references/non-redundant/genomicBS_fullScan.fa'
 mitochondrial_refs: 'resources/references/non-redundant/mitochondrial_tRNADB.fa'
 #mitochondrial_refs: 'resources/references/non-redundant/mitochondrial_gff.fa' # annotation errors!
 #housekeeping_refs: 'resources/references/non-redundant/housekeeping.fa'
-all_tRNAs_refs: 'resources/references/non-redundant/tRNAs.fa'
-seleceted_refs: 'resources/references/selected_refs.fa'
-manual_refs: 'resources/references/manual_refs.fa'
+
+
+#mapping
+#=======
+
+#segemehl parameters
+# see 10.1093/bioinformatics/btx756 for suggestions:--evalue 500 --differences 3 --maxinterval 1000 --accuracy 80
+# default:
+
+mapping: # on manual and selected refs
+  MOCK:
+    evalue: '500'
+    accuracy: '80'
+    maxinterval: '200' #1000
+    difference: '3' # 2,3
+  DM:
+    evalue: '500'
+    accuracy: '85'
+    maxinterval: '200' #1000
+    difference: '3' # 2,3
+  BS:
+    evalue: '500'
+    accuracy: '90'
+    maxinterval: '200' #1000
+    difference: '3' # 2,3
+    bisulfite: '1' #1
+
+pre_mapping: # on all refs
+  MOCK:
+    evalue: '500'
+    accuracy: '80'
+    maxinterval: '200' #1000
+    difference: '1' # 2,3
+  DM:
+    e_value: '500'
+    accuracy: '85'
+    maxinterval: '200' #1000
+    difference: '1' # 2,3
+  BS:
+    evalue: '500'
+    accuracy: '90'
+    maxinterval: '200' #1000
+    difference: '1' # 2,3
+    bisulfite: '1' #1
+
 
 #tRNA covariance model data (required input!)
 #--------------------------------------------
@@ -57,103 +101,80 @@ selected_alignment: 'resources/references/alignment/selected_tRNAs.fa'
 #samples (required input!)
 #-------------------------
 samples_tsv: 'config/samples.tsv'
-#samples_tsv: 'config/samples-7006.tsv'
-#samples_tsv: 'config/samples_noBS.tsv'
-#samples_tsv: 'config/samples_dm.tsv'
+
+
+# path to fastq files (provide fastq files within this folder)
+#--------------------
 raw_reads_folder: 'raw/raw_reads'
+
 
 #reads preprocessing
 #-------------------
 
-#max ployT after BS in ref: 18 in Lys-NNN-690; 15 in Phe-NNN-111; 13 in Leu-NNN-504 and Gly-NNN-1183;
-#max polyT after BS in high confidence refs: 10 in Ser and Leu
-#max ployT in DM in high confidence: 5 (Lys,Gly,Pro)
-#max ployT in DM in all ref: 8
-
-
-#mapping index
-#-------------
-index: 'resources/index/full.idx'
-bs_index:
-  ct: 'resources/index/full.ctidx'
-  ga: 'resources/index/full.gaidx'
-selected_index: 'resources/index/selected.idx'
-selected_bs_index:
-  ct: 'resources/index/selected.ctidx'
-  ga: 'resources/index/selected.gaidx'
+poly_T_processing: 'ONtttt'
 
 
 #min coverage cutoff after random assignment for getting high coverage refernces
 #-------------------------------------------------------------------------------
-#min_coverage_per_ref: [['max all count', 500],['max unique count', 20]] # connected with or
-#min_coverage_per_ref: [['max max fraction', 0.0005],['max max count', 500]] # connected with or
-min_coverage_per_ref: [['max max fraction', 0.0005]] # connected with or
-
-
+min_coverage_per_ref: [['max max fraction', 0.0005]]
 
 #clustering
 #----------
-cluster_method: 'editdist'
-editdist_cluster_cutoff: 4
-toplevel_multimapper_cluster_fraction: 0.5
+#cluster_method: 'editdist'
+#editdist_cluster_cutoff: 4
+#toplevel_multimapper_cluster_fraction: 0.5
 
-
-#percentage cutoff for minimum refernce set computation
-#----------------------------------------------------
-#max_coverage_selection_cutoff: 10
 
 #reads_prefilter
+#--------------
 reads_filter: 'umi' # 'umi', 'none', 'cigar', umicigar
 #reads_filter: 'none'
 
 #abundance analysis
+#------------------
 abundance_score: 'random fraction'
-abundance_heatmap_cutoff: 0.002
-manual_cluster_recovery: ['SeC-TCA[1.0](14)']
-clusters_to_remove: [26,25,20,13,10] #'Gly-CCC(26)', 'Lys-CTT(25)','Thr-AGT(10)'', and Ser-CGA(13)]
+#abundance_score: 'unique fraction'
+#abundance_score: 'unique fraction (norm all)'
+abundance_single_ref_cutoff: 0.002
 
-# reference set to use
-ref_set: 'selected' # 'raw', 'selected'
-#ref_set: 'raw'
+# plot paramters
+#---------------
 
-
-
-
-
-#coverage plot
-cov_plot:
-  min_coverage: 1000
+min_coverage: 1000
 replicate_markes: ['o', 's', '^', 'X', '+', 'D']
 #replicate_markes: ['o', 'o', 'o', 'o', 'o', 'o']
+min_C_fraction: 0.15 # min ref C fraction at position to make m5C call
+
+# modification line plots:
+#------------------------
+modification_lineplots_cutoff:
+  stop: 0.1
+  m5C: 0.25
+  #mismatch: 0.15
+  other: 0.15
+
+# reference set to use
+#----------------------
+#ref_set: 'selected'
+#ref_set: 'raw'
+ref_set: 'manual'
 
 
-# probes_scan
-#------------
-probes_tsv: 'config/probes.tsv'
-intarna_args: [
-        "-n",
-        "3", # max number of prdicted suboptimals
-        "--outOverlap",
-        "Q", # allowed in both ... B; allowed in none ... N
-        "--outMaxE",
-        "0",
-        "--outDeltaE",
-        "6",
-        "--noseed",
-        "--tAccW",
-        "0",
-        "--tAccL",
-        "0",
-        "--qAccW",
-        "0",
-        "--qAccL",
-        "0",
-        "--mode",
-        "M",  # M ... exact mode; H ... heuristic, default
-        "--model",
-        "S",  # S ... single side, mfe; X ... single side, mfe, seed extension
-        "--tIntLenMax",
-        "30",
-        "--qIntLenMax",
-        "30",
-    ]
+
+
+# config pca plots
+#-----------------
+
+pca_marker_dict:
+  MOCK: 'o'
+  DM: 's'
+  BS: '^'
+
+pca_color_dict:
+  1: 'tab:blue'
+  2: 'tab:orange'
+  3: 'tab:green'
+  4: 'tab:red'
+  5: 'tab:purple'
+  6: 'tab:brown'
+  7: 'tab:pink'

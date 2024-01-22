@@ -1,9 +1,8 @@
 rule get ref_edit_dist:
     input:
-        #fasta = config['min_raw_abundance_alignment']
-        fasta = config['selected_alignment']
+        fasta = 'resources/references/alignment/{ref_set}_tRNAs.fa'
     output:
-        edit_dist_tsv = 'resources/references/cluster/edit_dist.tsv'
+        edit_dist_tsv = 'resources/references/cluster/{ref_set}/edit_dist.tsv'
     run:
         import pandas as pd
         from Bio import SeqIO
@@ -30,9 +29,9 @@ rule get ref_edit_dist:
 
 rule plot_dist_hist:
     input:
-        edit_dist_tsv = 'resources/references/cluster/edit_dist.tsv'
+        edit_dist_tsv = 'resources/references/cluster/{ref_set}/edit_dist.tsv'
     output:
-        edit_dist_hist = 'results/qc/cluster/editdist_hist.pdf',
+        edit_dist_hist = 'qc/cluster/{ref_set}/editdist_hist.pdf',
     run:
         import pandas as pd
         import matplotlib.pyplot as plt
@@ -48,11 +47,11 @@ rule plot_dist_hist:
 
 rule multimapper_vs_dist:
     input:
-        edit_dist_tsv = 'resources/references/cluster/edit_dist.tsv',
-        multimapper_summary_tsv = 'resources/multimappers/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/multimapper_all.tsv',
+        edit_dist_tsv = 'resources/references/cluster/{ref_set}/edit_dist.tsv',
+        multimapper_summary_tsv = 'resources/multimappers/pre-filter_{reads_filter}/{ref_set}/multimapper_all.tsv',
     output:
-        plot = 'results/qc/cluster/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/dist_multimapper.pdf',
-        summary_tsv = 'resources/cluster/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/dist_multimapper.tsv'
+        plot = 'qc/cluster/pre-filter_{reads_filter}/{ref_set}/dist_multimapper.pdf',
+        summary_tsv = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/dist_multimapper.tsv'
     run:
         import pandas as pd
         import matplotlib.pyplot as plt
@@ -101,13 +100,13 @@ rule multimapper_vs_dist:
 
 rule cluster_by_editdist:
     input:
-        summary_tsv = 'resources/references/cluster/edit_dist.tsv',
-        abundance_tsv = 'resources/coverage/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/min_coverage_summary_DM.tsv'
+        summary_tsv = 'resources/references/cluster/{ref_set}/edit_dist.tsv',
+        abundance_tsv = 'resources/coverage/pre-filter_{reads_filter}/{ref_set}/min_coverage_summary_DM.tsv'
     output:
-        cluster_map = 'resources/cluster/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-editdist-{cutoff}.yaml',
-        cluster_names = 'resources/cluster/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusternames-editdist-{cutoff}.yaml',
-        cluster_info = 'resources/cluster/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusternames-editdist-{cutoff}.txt',
-        cluster_abundance = 'resources/cluster/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster-abundanceinfo-editdist-{cutoff}.txt',
+        cluster_map = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusters-editdist-{cutoff}.yaml',
+        cluster_names = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusternames-editdist-{cutoff}.yaml',
+        cluster_info = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusternames-editdist-{cutoff}.txt',
+        cluster_abundance = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/cluster-abundanceinfo-editdist-{cutoff}.txt',
     wildcard_constraints:
         cutoff="[0-5]",
     run:
@@ -131,14 +130,6 @@ rule cluster_by_editdist:
                 continue
             ref1=df.at[i,'ref1']
             ref2=df.at[i,'ref2']
-            #if ref1 not in abundance_dict.keys() or ref2 not in abundance_dict.keys():
-            #    continue
-            #if ref2 not in abundance_dict.keys() or ref2 not in abundance_dict.keys():
-            #    continue
-            #if abundance_dict[ref1]['max random fraction'] < 0.0001:
-            #    continue
-            #if abundance_dict[ref2]['max random fraction'] < 0.0001:
-            #    continue
             for j,group in enumerate(references):
                 if ref1 in group:
                     id1 = j
@@ -218,13 +209,13 @@ rule cluster_by_editdist:
 
 rule multimapper_cluster:
     input:
-        tsv = 'resources/multimappers/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster-editdist-{e_cutoff}/{treatment}/multimappers_between_clusters.tsv',
-        cluster_names = 'resources/cluster/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-editdist-{e_cutoff}.yaml',
-        abundance_tsv = 'resources/coverage/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/min_coverage_summary_DM.tsv',
+        tsv = 'resources/multimappers/pre-filter_{reads_filter}/{ref_set}/cluster-editdist-{e_cutoff}/{treatment}/multimappers_between_clusters.tsv',
+        cluster_names = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusters-editdist-{e_cutoff}.yaml',
+        abundance_tsv = 'resources/coverage/pre-filter_{reads_filter}/{ref_set}/min_coverage_summary_DM.tsv',
     output:
-        cluster_map = 'resources/cluster/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{treatment}.yaml',
-        cluster_names = 'resources/cluster/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusternames-ed-{e_cutoff}-mm-{m_cutoff}_{treatment}.yaml',
-        cluster_abundance = 'resources/cluster/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster-abundanceinfo-ed-{e_cutoff}-mm-{m_cutoff}_{treatment}.txt',
+        cluster_map = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{treatment}.yaml',
+        cluster_names = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusternames-ed-{e_cutoff}-mm-{m_cutoff}_{treatment}.yaml',
+        cluster_abundance = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/cluster-abundanceinfo-ed-{e_cutoff}-mm-{m_cutoff}_{treatment}.txt',
     wildcard_constraints:
         e_cutoff="[0-5]",
         m_cutoff="\d+",
@@ -269,7 +260,12 @@ rule multimapper_cluster:
         df = df[df['cluster1']!=df['cluster2']]
         df = df.query("cluster1 != cluster2")
 
+        print(df.head(40))
+
         for c1, gdf in df.groupby('cluster1'):
+            print(c1)
+            print(clusters)
+            print(gdf)
 
 
             max_shared_cluster = gdf.sort_values('mean_ref1_multimaper_fraction', ascending=False, inplace=False)['cluster2'].to_list()[0]
@@ -281,6 +277,9 @@ rule multimapper_cluster:
                 if max_shared_cluster in cluster:
                     id2 = j
                     cluster2 = cluster
+            print(id1,id2)
+            print(clusters[id1])
+            print(clusters[id2])
 
             del clusters[max(id1,id2)]
             del clusters[min(id1,id2)]
@@ -288,6 +287,13 @@ rule multimapper_cluster:
 
 
         # annotate new clusters
+        print(cluster_df.head(20))
+        print(clusters)
+        for e_clust in cluster_df['editdist_cluster'].to_list():
+            match = [i for i, c in enumerate(clusters) if str(int(e_clust)) in c]
+            if match == []:
+                print('m', e_clust)
+
         cluster_df['cluster'] = cluster_df.apply(lambda row: [i for i, c in enumerate(clusters) if str(int(row['editdist_cluster'])) in c][0] , axis = 1)
 
 
@@ -331,11 +337,11 @@ rule multimapper_cluster:
 
 rule get_cluster_names:
     input:
-        mismatch_tsvs = expand('resources/coverage_counts/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/{sample}_per_cluster.tsv', sample = dm_samples, e_cutoff='{e_cutoff}', m_cutoff='{m_cutoff}' ),
-        cluster_names = 'resources/cluster/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusternames-ed-{e_cutoff}-mm-{m_cutoff}_{treatment}.yaml',
+        mismatch_tsvs = expand('resources/coverage_counts/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/{sample}_per_cluster.tsv', sample = dm_samples, e_cutoff='{e_cutoff}', m_cutoff='{m_cutoff}' ),
+        cluster_names = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusternames-ed-{e_cutoff}-mm-{m_cutoff}_{treatment}.yaml',
 
     output:
-        cluster_names = 'resources/cluster/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/anticodonbased_clusternames-ed-{e_cutoff}-mm-{m_cutoff}_{treatment}.yaml',
+        cluster_names = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/anticodonbased_clusternames-ed-{e_cutoff}-mm-{m_cutoff}_{treatment}.yaml',
     run:
         import pandas as pd
         import yaml
