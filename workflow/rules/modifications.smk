@@ -1,3 +1,8 @@
+
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
+
+
 rule per_cluster_per_timepoint_position_reference:
     input:
         mismatch_tsvs = expand('resources/coverage_counts/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/{sample}.tsv', reads_filter = '{reads_filter}',ref_set='{ref_set}', sample = SAMPLES, e_cutoff='{e_cutoff}', m_cutoff='{m_cutoff}' ),
@@ -6,6 +11,8 @@ rule per_cluster_per_timepoint_position_reference:
     output:
         merged_pdf = 'results/modifications/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/per-cluster-and-timepoint_position-reference-heatmap/{treatment}/{mismatch_type}/all_clusters.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
         import os
@@ -94,6 +101,8 @@ rule plot_per_timepoint_position_clusters_heatmap:
     output:
         pdf = 'results/modifications/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/per-timepoint_position-cluster_heatmap/{treatment}/{mismatch_type}/summary.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
         import matplotlib.pyplot as plt
@@ -189,6 +198,8 @@ rule per_cluster_sample_position_mismatch_heatmap:
     output:
         pdf = 'results/modifications/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/per-cluster_sample-position_heatmap/{treatment}/{mismatch_type}/summary.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
         import matplotlib.pyplot as plt
@@ -293,6 +304,8 @@ rule per_cluster_timepoint_position_mismatch_heatmap:
     output:
         pdf = 'results/modifications/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/per-cluster_timepoint-position_heatmap/{treatment}/{mismatch_type}/summary.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
         import matplotlib.pyplot as plt
@@ -401,6 +414,8 @@ rule per_pos_cluster_mismatch_line_plot:
     output:
         pdf = 'results/modifications/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_{min_cov}/{mismatch_type}/summary.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
         import matplotlib.pyplot as plt
@@ -553,6 +568,8 @@ rule per_pos_cluster_mismatch_line_plot_small_legend:
     output:
         pdf = 'results/modifications/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_{min_cov}/{mismatch_type}/summary.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
         import matplotlib.pyplot as plt
@@ -705,6 +722,8 @@ rule per_pos_cluster_mismatch_coverage_plot:
     output:
         pdf = 'results/modifications/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_{min_cov}/{mismatch_type}/summary.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
         import matplotlib.pyplot as plt
@@ -882,6 +901,8 @@ rule per_pos_ref_mismatch_line_plot:
     output:
         pdf = 'results/modifications/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/per-high-coverage-ref_modified-position_line-plot/{treatment}/min_cov_{min_cov}/{mismatch_type}/summary.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
         import matplotlib.pyplot as plt

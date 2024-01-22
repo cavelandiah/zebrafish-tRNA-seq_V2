@@ -1,10 +1,16 @@
+
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
+
 rule get_raw_mapped_manual_and_remove_GAmapped:
     input:
-        #sam = 'resources/mapping/{sample}.sam',
         sam = 'resources/mapping/manual/polyTtrimming_ONtttt/{sample}.sam'
     output:
         sam = 'resources/filtered-mappings/pre-filter_none/manual/mapped/{sample}.sam'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
+
         import pandas as pd
         import numpy as np
 
@@ -86,6 +92,8 @@ rule filter_umi_on_manual:
     output:
         sam = 'resources/filtered-mappings/pre-filter_umi/manual/mapped/{sample}.sam'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         df = pd.read_csv(
         input.sam,
@@ -112,6 +120,8 @@ rule get_mapped_random_manual:
     output:
         sam = 'resources/filtered-mappings/pre-filter_{read_filter}/manual/random/{sample}.sam'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         df = pd.read_csv(
         input.sam,
@@ -129,6 +139,8 @@ rule get_mapped_unique_manual:
     output:
         sam = 'resources/filtered-mappings/pre-filter_{read_filter}/manual/unique/{sample}.sam'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         df = pd.read_csv(
         input.sam,
@@ -149,6 +161,8 @@ rule get_coverage_per_manual_ref:
     output:
         tsv = 'resources/coverage/pre-filter_{read_filter}/manual/per-ref/{sample}.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         df_uni = pd.read_csv(
         input.unique,
         sep="\t",
@@ -200,6 +214,8 @@ rule get_coverage_summary_manual:
     output:
         tsv = 'resources/coverage/pre-filter_{read_filter}/manual/coverage_summary_DM.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         summary_df =  pd.DataFrame()
         for file in input:
             sample = file.split('/')[-1].replace('.tsv','')
@@ -224,6 +240,8 @@ rule get_coverage_summary_manual_all:
     output:
         tsv = 'resources/coverage/pre-filter_{read_filter}/manual/coverage_summary_all.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         summary_df =  pd.DataFrame()
         for file in input:
             sample = file.split('/')[-1].replace('.tsv','')

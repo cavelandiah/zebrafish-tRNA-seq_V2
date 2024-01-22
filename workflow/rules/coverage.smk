@@ -1,3 +1,6 @@
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
+
 rule per_ref_nt_count:
     input:
         sam = 'resources/filtered-mappings/pre-filter_{reads_filter}/{ref_set}/random/{sample}.sam',
@@ -7,6 +10,8 @@ rule per_ref_nt_count:
     output:
         tsv =  'resources/coverage_counts/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}/{sample}.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import os
         from Bio import SeqIO
@@ -225,6 +230,8 @@ rule per_cluster_nt_count:
     output:
         cluster_tsv =  'resources/coverage_counts/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}/{sample}_per_{group}.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import numpy as np
 

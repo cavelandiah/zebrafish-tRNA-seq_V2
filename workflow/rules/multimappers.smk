@@ -1,3 +1,6 @@
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
+
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -9,6 +12,8 @@ import yaml
 
 
 def plot_multimappers_between_clusters(df, figure_path, title):
+    # Author: Maria Waldl • code@waldl.org
+    # Version: 2024-01-24
 
     fig, axs = plt.subplots(
         figsize=(240 * CM, 60 * CM), nrows=1, ncols=4, layout="tight"
@@ -137,6 +142,8 @@ def plot_multimappers_between_refs(df, figure_path, pivot_tsv, cluster_map):
 
 
 def summarize_multimappers_between_clusters(tsv_files, cluster_name_file, summary_file):
+    # Author: Maria Waldl • code@waldl.org
+    # Version: 2024-01-24
 
     with open(cluster_name_file) as file:
         cluster_name_dict = yaml.safe_load(file)
@@ -198,7 +205,8 @@ def summarize_multimappers_between_clusters(tsv_files, cluster_name_file, summar
 
 
 def get_multimappers_between_clusters(sam_file, cluster_file, cluster_name_file, out_file):
-
+    # Author: Maria Waldl • code@waldl.org
+    # Version: 2024-01-24
     with open(cluster_file) as file:
         cluster_dict = yaml.safe_load(file)
     with open(cluster_name_file) as file:
@@ -233,6 +241,8 @@ rule get_multimappers_per_sample:
     output:
         pair_tsv = 'resources/multimappers/pre-filter_{reads_filter}/{ref_set}/per-sample/pair_{sample}.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         df = pd.read_csv(input.sam, sep="\t")
         read_count = len(list(set(df['QNAME'].to_list())))
@@ -261,6 +271,8 @@ rule get_multimappers_summary_per_ref:
         cluster_map = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusters_for_sorting_between_refs_multimapper_plot.yaml',
         pdf = 'results/multimappers/pre-filter_{reads_filter}/{ref_set}/multimapper_between_refs.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
         import numpy as np

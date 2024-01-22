@@ -1,9 +1,14 @@
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
+
 rule get ref_edit_dist:
     input:
         fasta = 'resources/references/alignment/{ref_set}_tRNAs.fa'
     output:
         edit_dist_tsv = 'resources/references/cluster/{ref_set}/edit_dist.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         from Bio import SeqIO
 
@@ -33,6 +38,8 @@ rule plot_dist_hist:
     output:
         edit_dist_hist = 'qc/cluster/{ref_set}/editdist_hist.pdf',
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import matplotlib.pyplot as plt
         df = pd.read_csv(input.edit_dist_tsv, header = None, sep = '\t', names = ['ref1', 'ref2', 'dist'])
@@ -53,6 +60,8 @@ rule multimapper_vs_dist:
         plot = 'qc/cluster/pre-filter_{reads_filter}/{ref_set}/dist_multimapper.pdf',
         summary_tsv = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/dist_multimapper.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import matplotlib.pyplot as plt
         import numpy as np
@@ -110,6 +119,8 @@ rule cluster_by_editdist:
     wildcard_constraints:
         cutoff="[0-5]",
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
         df = pd.read_csv(input.abundance_tsv, sep="\t")
@@ -221,6 +232,8 @@ rule multimapper_cluster:
         m_cutoff="\d+",
         treatment = "[A-Z]+"
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
 
@@ -337,12 +350,14 @@ rule multimapper_cluster:
 
 rule get_cluster_names:
     input:
-        mismatch_tsvs = expand('resources/coverage_counts/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/{sample}_per_cluster.tsv', sample = dm_samples, e_cutoff='{e_cutoff}', m_cutoff='{m_cutoff}' ),
+        mismatch_tsvs = expand('resources/coverage_counts/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/{sample}_per_cluster.tsv', reads_filter = '{reads_filter}',ref_set='{ref_set}', sample = dm_samples, e_cutoff='{e_cutoff}', m_cutoff='{m_cutoff}' ),
         cluster_names = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusternames-ed-{e_cutoff}-mm-{m_cutoff}_{treatment}.yaml',
 
     output:
         cluster_names = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/anticodonbased_clusternames-ed-{e_cutoff}-mm-{m_cutoff}_{treatment}.yaml',
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
 

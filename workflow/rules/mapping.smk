@@ -1,3 +1,5 @@
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
 
 rule build_segemehl_index:
     input:
@@ -34,6 +36,8 @@ rule mapping_segemehl:
         #mem_mb = 500
     threads: 2
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import subprocess
         import pandas as pd
 
@@ -103,5 +107,4 @@ rule mapping_segemehl:
 
         results = subprocess.run(call_args, capture_output=True)
         data = results.stderr.decode()
-        print(data)
         mapping_stat = get_mapping_stats(data, output.mapping_stats, wildcards.sample)

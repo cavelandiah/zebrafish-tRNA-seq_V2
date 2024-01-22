@@ -1,4 +1,8 @@
 
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
+
+
 rule raw_fastqc: # only used in qc overview, not for preprocessing before mapping
     input:
         config['raw_reads_folder']+"/{sample}.R1.fastq"
@@ -60,6 +64,8 @@ rule get_umi:
         fastq = "resources/filteres-reads/a_u_{sample,[A-Za-z0-9]+}.fastq",
         log = "qc/trimming/a_u_{sample}_umi-tools.log"
     shell:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         'umi_tools extract --stdin={input} --extract-method=regex --bc-pattern="(?P<umi_1>.{{3}})([AGCTUN].*)(?P<umi_2>.{{6}})$" -L {output.log} --stdout {output.fastq}'
 
 
@@ -112,31 +118,6 @@ rule quality_filter:
         subprocess.run(call_args)
         shutil.copyfile('fastp.json', output.json)
 
-rule dupl_fastqc: #TODO currently not used
-    input:
-        "resources/filteres-reads/a_{sample}.fastq"
-    output:
-        html="qc/fastqc/dupl_{sample}.html",
-        json="qc/fastqc/dupl_{sample}_fastq.json"
-    run:
-        import os
-        import subprocess
-        import shutil
-        call_args = ['fastp',
-                     '-i', input[0],
-                     '--length_required=20',
-                     '-p',
-                     #'--quiet',
-                     #https://pypi.org/project/umitools/
-                     #https://github.com/weng-lab/umitools
-                     #https://bmcgenomics.biomedcentral.com/articles/10.1186/s12864-018-4933-1
-                     #https://www.nature.com/articles/s41598-020-71323-0
-                     #https://umi-tools.readthedocs.io/en/latest/reference/count_tab.html
-                     #https://pubmed.ncbi.nlm.nih.gov/29368091/
-                     '-U', '--umi_loc=reahttps://pypi.org/project/umitools/d1', '--umi_len=3',
-                     '-h', output.html]
-        subprocess.run(call_args)
-        shutil.copyfile('fastp.json', output.json)
 
 
 rule trim_5prime_polyT:

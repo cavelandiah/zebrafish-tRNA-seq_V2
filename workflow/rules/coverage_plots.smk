@@ -1,3 +1,7 @@
+
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
+
 rule coverage_plots_per_group_sample:
     input:
         mismatch_tsvs = expand('resources/coverage_counts/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}/{sample}_per_cluster.tsv', reads_filter = '{reads_filter}',ref_set='{ref_set}',sample = SAMPLES, e_cutoff='{e_cutoff}', m_cutoff='{m_cutoff}', c_treatment='{c_treatment}' ),
@@ -5,6 +9,9 @@ rule coverage_plots_per_group_sample:
     output:
         pdf = 'results/coverage_plots/pre-filter_{reads_filter}/{ref_set}/per_cluster-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}/coverage_plots_per_sample_{treatment}/color_scheme_{coloring}/summary.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
+
         import pandas as pd
         import matplotlib.pyplot as plt
         import os

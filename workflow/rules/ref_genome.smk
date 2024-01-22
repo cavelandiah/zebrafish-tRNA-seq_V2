@@ -1,4 +1,7 @@
 
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
+
 import pandas as pd
 
 
@@ -21,6 +24,8 @@ rule fasta_files_from_ncbi_by_accession:
     output:
         fasta_file = "resources/references/genome/{accession}.fa"
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import random
         import time
         from Bio import SeqIO
@@ -60,6 +65,8 @@ rule get_mitochondrial_tRNAs_from_gff:
     output:
         fa = 'resources/references/non-redundant/mitochondrial_gff.fa'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         from BCBio import GFF
         from Bio import SeqIO
 
@@ -84,7 +91,7 @@ rule get_mitochondrial_tRNAs_from_gff:
                     if trna.location.strand == -1:
                         seq = seq.reverse_complement()
                     out.write(str(seq) + "CCA\n")
-            in_handle.close
+            in_handle.close()
 
 
 rule get_mitochondrial_tRNAs_from_mt_tRNADB:
@@ -94,6 +101,8 @@ rule get_mitochondrial_tRNAs_from_mt_tRNADB:
     output:
         fa = 'resources/references/non-redundant/mitochondrial_tRNADB.fa'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         from Bio import SeqIO
         with open(output.fa, "w") as out:
             in_handle = open(input.mitochondrial_fa)
@@ -108,7 +117,7 @@ rule get_mitochondrial_tRNAs_from_mt_tRNADB:
                 else:
                     out.write(line.strip().replace('U','T')+'CCA\n')
 
-            in_handle.close
+            in_handle.close()
 
 
 rule get_high_confidence_genomic_tRNAs_from_tRNAscanSE:
@@ -121,6 +130,8 @@ rule get_high_confidence_genomic_tRNAs_from_tRNAscanSE:
         bs_group_info = 'resources/references/non-redundant/group_info_hc.yaml',
         #bs_group_seqs = 'resources/references/non-redundant/group_info.txt'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         from Bio import SeqIO
         import yaml
@@ -258,6 +269,8 @@ rule get_all_genomic_tRNAs_from_tRNAscanSE:
         bs_group_info = 'resources/references/non-redundant/group_info_fullScan.yaml',
         #bs_group_seqs = 'resources/references/non-redundant/group_info.txt'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         from Bio import SeqIO
         import yaml
@@ -461,6 +474,8 @@ rule get_selected_refs:
     output:
         fasta = 'resources/references/selected_refs.fa'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import yaml
         from Bio import SeqIO
         from Bio.SeqRecord import SeqRecord
@@ -481,6 +496,8 @@ rule remove_CCA_from_manual_refs:
     output:
         fasta = 'resources/references/non-redundant/manual-noCCA.fa',
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         from Bio import SeqIO
         from Bio.SeqRecord import SeqRecord
         with open(output.fasta, 'w') as output_fasta:
@@ -496,6 +513,8 @@ rule copy_manual_refs:
     output:
         fasta = 'resources/references/manual_refs.fa',
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         from Bio import SeqIO
         from Bio.SeqRecord import SeqRecord
         with open(output.fasta, 'w') as output_fasta:

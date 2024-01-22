@@ -1,4 +1,5 @@
-
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
 
 
 rule plot_percluster_time_abundance_lineperreference:
@@ -9,6 +10,8 @@ rule plot_percluster_time_abundance_lineperreference:
     output:
         anticodon_pdf = 'results/abundance/pre-filter_{reads_filter}/{ref_set}/cluster_ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}/{treatment}_per-cluster_time_abundance_line-per-ref/summary.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import matplotlib.pyplot as plt
         import yaml
@@ -136,6 +139,8 @@ rule plot_percluster_time_abundance_lineperreference_small_legend:
     output:
         anticodon_pdf = 'results/abundance/pre-filter_{reads_filter}/{ref_set}/cluster_ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}/{treatment}_per-cluster_time_abundance_line-per-ref-smaller-legend/summary.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import matplotlib.pyplot as plt
         import yaml
@@ -269,6 +274,8 @@ rule plot_abundance_boxplots_cluster:
     output:
         cluster_pdf = 'results/abundance/pre-filter_{reads_filter}/{ref_set}/cluster/ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}/{treatment}-boxplot.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
         import matplotlib.pyplot as plt
@@ -339,6 +346,8 @@ rule plot_abundance_scatterplots_cluster:
     output:
         cluster_pdf = 'results/abundance/pre-filter_{reads_filter}/{ref_set}/cluster_ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}/{treatment}_per-cluster_time_abundance_scatter/summary.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
         import matplotlib.pyplot as plt
@@ -447,6 +456,8 @@ rule plot_summary_time_cluster_abundance_heatmap:
     output:
         cluster_pdf = 'results/abundance/pre-filter_{reads_filter}/{ref_set}/cluster_ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}/{treatment}_summary_time-cluster-abundance_heatmap.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import matplotlib.pyplot as plt
         import seaborn as sn
@@ -513,6 +524,8 @@ rule plot_summary_sample_cluster_abundance_heatmap:
     output:
         cluster_pdf = 'results/abundance/pre-filter_{reads_filter}/{ref_set}/cluster_ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}/{treatment}_summary_sample-cluster-abundance_heatmap.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import matplotlib.pyplot as plt
         import seaborn as sn

@@ -1,10 +1,15 @@
+
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
+
 rule get_raw_mapped_and_remove_BS_GAtransitions:
     input:
-        #sam = 'resources/mapping/{sample}.sam',
         sam = 'resources/mapping/all/polyTtrimming_ONtttt/{sample}.sam'
     output:
         sam = 'resources/filtered-mappings/pre-filter_none/raw/mapped/{sample}.sam'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import numpy as np
 
@@ -88,6 +93,8 @@ rule filter_cigar:
     output:
         sam = 'resources/filtered-mappings/pre-filter_cigar/raw/mapped/{sample}.sam'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         df = pd.read_csv(
         input.sam,
@@ -115,6 +122,8 @@ rule filter_umi:
     output:
         sam = 'resources/filtered-mappings/pre-filter_umi/raw/mapped/{sample}.sam'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         df = pd.read_csv(
         input.sam,
@@ -141,6 +150,8 @@ rule filter_umicigar:
     output:
         sam = 'resources/filtered-mappings/pre-filter_umicigar/raw/mapped/{sample}.sam'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         df = pd.read_csv(
         input.sam,
@@ -169,6 +180,8 @@ rule get_uniquely_mapped:
     output:
         sam = 'resources/filtered-mappings/pre-filter_{reads_filter}/raw/unique/{sample}.sam'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         df = pd.read_csv(
         input.sam,
@@ -185,6 +198,8 @@ rule get_random_mapped:
     output:
         sam = 'resources/filtered-mappings/pre-filter_{reads_filter}/raw/random/{sample}.sam'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         df = pd.read_csv(
         input.sam,
@@ -203,6 +218,8 @@ rule get_coverage_per_ref:
     output:
         tsv = 'resources/coverage/pre-filter_{reads_filter}/raw/per-ref/{sample}.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         df_uni = pd.read_csv(
         input.unique,
         sep="\t",
@@ -252,6 +269,8 @@ rule max_coverage_mapped:
     output:
         sam = 'resources/filtered-mappings/pre-filter_umi/raw/max-coverage_cutoff-{cutoff}_high-confidence-{hc}/{sample}.sam',
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
 
         #raw_abundance_dict[row['RNAME']]['raw']
@@ -294,6 +313,8 @@ rule get_coverage_per_selected_ref_with_max:
     output:
         tsv = 'resources/coverage/pre-filter_{reads_filter}/raw/per-ref-with-max/{sample}.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         df_uni = pd.read_csv(
         input.unique,
         sep="\t",
@@ -349,6 +370,8 @@ rule get_coverage_summary:
     output:
         tsv = 'resources/coverage/pre-filter_{reads_filter}/raw/coverage_summary_DM.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         summary_df =  pd.DataFrame()
         for file in input:
             sample = file.split('/')[-1].replace('.tsv','')
@@ -373,6 +396,8 @@ rule get_coverage_summary_with_max:
     output:
         tsv = 'resources/coverage/pre-filter_{reads_filter}/raw/coverage_summary_DM-with-max.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         summary_df =  pd.DataFrame()
         for file in input:
             sample = file.split('/')[-1].replace('.tsv','')
@@ -397,6 +422,8 @@ rule get_min_coverage_summary:
     output:
         'resources/coverage/pre-filter_{reads_filter}/raw/min_coverage_summary_DM.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         df = pd.read_csv(input[0], sep="\t")
         df.set_index('RNAME', inplace = True)
         criteria = ['unique count', 'random count', 'all count', 'unique fraction', 'random fraction', 'all fraction', 'unique/random', 'random/all']
@@ -413,6 +440,8 @@ rule get_min_coverage_summary_with_max:
     output:
         'resources/coverage/pre-filter_{reads_filter}/raw/min_coverage_summary_DM-with-max.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         df = pd.read_csv(input[0], sep="\t")
         df.set_index('RNAME', inplace = True)
         criteria = ['unique count', 'random count', 'all count' ,'max count', 'unique fraction', 'random fraction', 'all fraction','max fraction', 'unique/random', 'random/all']
@@ -431,6 +460,8 @@ rule get_min_cov_refs:
     output:
         keep_refs = 'resources/min_coverage_refs/pre-filter_{reads_filter}/min_cov_refs.yaml'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
         df = pd.read_csv(input.cov_sum, sep="\t")
@@ -453,6 +484,8 @@ rule get_raw_mapped_selected:
     output:
         sam = 'resources/filtered-mappings/pre-filter_none/selected/mapped/{sample}.sam'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import numpy as np
         cols = [
@@ -501,6 +534,8 @@ rule filter_umi_on_selected:
     output:
         sam = 'resources/filtered-mappings/pre-filter_umi/selected/mapped/{sample}.sam'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         df = pd.read_csv(
         input.sam,
@@ -527,6 +562,8 @@ rule get_mapped_min_cov_ref_random:
     output:
         sam = 'resources/filtered-mappings/pre-filter_{reads_filter}/selected/random/{sample}.sam'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         df = pd.read_csv(
         input.sam,
@@ -544,6 +581,8 @@ rule get_mapped_min_cov_ref_unique:
     output:
         sam = 'resources/filtered-mappings/pre-filter_{reads_filter}/selected/unique/{sample}.sam'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         df = pd.read_csv(
         input.sam,
@@ -564,6 +603,8 @@ rule get_coverage_per_selected_ref:
     output:
         tsv = 'resources/coverage/pre-filter_{reads_filter}/selected/per-ref/{sample}.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         df_uni = pd.read_csv(
         input.unique,
         sep="\t",
@@ -615,6 +656,8 @@ rule get_coverage_summary_selected:
     output:
         tsv = 'resources/coverage/pre-filter_{reads_filter}/selected/coverage_summary_DM.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         summary_df =  pd.DataFrame()
         for file in input:
             sample = file.split('/')[-1].replace('.tsv','')
@@ -639,6 +682,8 @@ rule get_coverage_summary_selected_mock:
     output:
         tsv = 'resources/coverage/pre-filter_{reads_filter}/selected/coverage_summary_all.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         summary_df =  pd.DataFrame()
         for file in input:
             sample = file.split('/')[-1].replace('.tsv','')
@@ -664,6 +709,8 @@ rule get_min_coverage_summary_selected:
     output:
         'resources/coverage/pre-filter_{reads_filter}/{ref_set}/min_coverage_summary_DM.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         df = pd.read_csv(input[0], sep="\t")
         df.set_index('RNAME', inplace = True)
         criteria = ['unique count', 'random count', 'all count', 'unique fraction', 'random fraction', 'all fraction', 'unique/random', 'random/all']

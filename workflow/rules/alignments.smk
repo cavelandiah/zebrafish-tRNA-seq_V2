@@ -1,3 +1,5 @@
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
 
 rule align_to_cm:
     input:
@@ -13,6 +15,8 @@ rule align_to_cm:
         genomic_additional_alignment = config['genomic_additional_alignment'],
     threads: 4
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import os
         import subprocess
         import shutil
@@ -66,6 +70,8 @@ rule get_min_cov_refs_for_alignment:
     output:
         keep_refs = 'resources/min_coverage_refs/pre-filter_umi/min_cov_refs_alignment.yaml'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
         df = pd.read_csv(input.cov_sum, sep="\t")
@@ -89,6 +95,8 @@ rule get_min_raw_coverage_fasta: # cm align can not align more than 10 000 seqeu
     output:
         fasta = config['min_raw_abundance_refs']
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import yaml
         from Bio import SeqIO
         from Bio.SeqRecord import SeqRecord
@@ -118,6 +126,8 @@ rule align_min_coverage_refs_to_cm:
         min_coverage_alignment = config['min_raw_abundance_alignment'].replace('.fa', '')+'without_CCA.fa', # Rfam alignment contains no CCA
     threads: 4
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import os
         import subprocess
         import shutil
@@ -144,6 +154,8 @@ rule add_CCA_to_alignment:
         minimal_coverage_alignment = config['min_raw_abundance_alignment'],
         selected_alignment = config['selected_alignment'],
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         from Bio import SeqIO
         from Bio.SeqRecord import SeqRecord
         import yaml
@@ -175,6 +187,8 @@ rule get_sorted_selected_alignment:
     output:
         selected_alignment = config['selected_alignment']+'_sorted.fa',
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         from Bio import SeqIO
         from Bio.SeqRecord import SeqRecord
         import yaml
@@ -199,6 +213,8 @@ rule align_manual_refs_to_cm:
         manual_alignment = 'resources/references/alignment/manual_tRNAs_noCCA.fa'
     threads: 4
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import os
         import subprocess
         import shutil
@@ -223,6 +239,8 @@ rule add_CCA_to_manual_alignment:
     output:
         manual_alignment = 'resources/references/alignment/manual_tRNAs.fa'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         from Bio import SeqIO
         from Bio.SeqRecord import SeqRecord
 

@@ -1,3 +1,5 @@
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
 
 rule plot_peranticodon_time_abundance_anticodon_lineperref:
     input:
@@ -5,6 +7,8 @@ rule plot_peranticodon_time_abundance_anticodon_lineperref:
     output:
         anticodon_pdf = 'results/abundance/pre-filter_{reads_filter}/{ref_set}/anticodon/all_refs/summary.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import matplotlib.pyplot as plt
 
@@ -126,6 +130,8 @@ rule plot_abundance_boxplots_anticodon:
     output:
         anticodon_pdf = 'results/abundance/pre-filter_{reads_filter}/{ref_set}/anticodon/boxplot.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import matplotlib.pyplot as plt
 
@@ -182,6 +188,8 @@ rule plot_abundance_scatterplots_anticodon:
     output:
         anticodon_pdf = 'results/abundance/pre-filter_{reads_filter}/{ref_set}/anticodon/scatterplot.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import matplotlib.pyplot as plt
 
@@ -244,6 +252,8 @@ rule plot_heatmap_anticodon:
     output:
         anticodon_pdf = 'results/abundance/pre-filter_{reads_filter}/{ref_set}/anticodon/heatmap.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import matplotlib.pyplot as plt
         import seaborn as sn
@@ -291,6 +301,8 @@ rule plot_heatmap_anticodon_all_points:
     output:
         anticodon_pdf = 'results/abundance/pre-filter_{reads_filter}/{ref_set}/anticodon/heatmap-singlesample.pdf'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import matplotlib.pyplot as plt
         import seaborn as sn

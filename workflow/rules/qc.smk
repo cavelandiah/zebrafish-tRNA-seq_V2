@@ -1,8 +1,14 @@
+
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
+
 import pandas as pd
 import matplotlib.pyplot as plt
 
 
 def print_mapping_summary(input_file, mapping_ids,title, summary_tsv, summary_plot):
+    # Author: Maria Waldl • code@waldl.org
+    # Version: 2024-01-24
     data = []
     tsvs = input_file
     for i, f in enumerate(tsvs):

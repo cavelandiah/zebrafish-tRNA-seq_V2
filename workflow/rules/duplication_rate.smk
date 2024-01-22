@@ -1,4 +1,5 @@
-
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
 
 
 rule duplication_rate:
@@ -9,6 +10,8 @@ rule duplication_rate:
         tsv = 'qc/umi/{ref_set}_duplication_rate.tsv',
         pdf = 'qc/umi/{ref_set}_duplication_rate.pdf',
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import seaborn as sn
         import matplotlib.pyplot as plt

@@ -1,3 +1,8 @@
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
+
+
+
 rule get_abundance_summary:
     input:
         tsv = 'resources/coverage/pre-filter_{reads_filter}/{ref_set}/coverage_summary_{treatment}.tsv',
@@ -7,6 +12,8 @@ rule get_abundance_summary:
         tsv = 'resources/coverage/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}_coverage_summary_{treatment}.tsv',
         html = 'resources/coverage/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}_coverage_summary_{treatment}.html'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
         import numpy as np
@@ -99,6 +106,8 @@ rule get_abundance_summary_all:
     output:
         tsv = 'resources/coverage/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}_coverage_summary_all.tsv'
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         import yaml
         import numpy as np

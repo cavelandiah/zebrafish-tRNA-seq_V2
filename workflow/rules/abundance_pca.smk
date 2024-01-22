@@ -1,3 +1,5 @@
+# Author: Maria Waldl • code@waldl.org
+# Version: 2024-01-24
 
 import pandas as pd
 from sklearn.decomposition import PCA
@@ -9,6 +11,7 @@ import timeimport pandas as pd
 
 
 def plot_explained_variance(data, path):
+
     pca = PCA().fit(data)
     var_exp = pca.explained_variance_ratio_
     cum_var_exp = np.cumsum(var_exp)
@@ -151,6 +154,8 @@ rule get_abundance_pca:
     wildcard_constraints:
         treatment="[BSalDMOCK]+"
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         from sklearn.decomposition import PCA
         from sklearn.preprocessing import StandardScaler
@@ -219,6 +224,8 @@ rule get_abundance_pca_per_timepoint_cluster:
     wildcard_constraints:
         treatment="[BSalDMOCK]+"
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         from sklearn.decomposition import PCA
         from sklearn.preprocessing import StandardScaler
@@ -296,6 +303,8 @@ rule get_abundance_pca_per_sample_cluster:
     wildcard_constraints:
         treatment="[BSalDMOCK]+"
     run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
         import pandas as pd
         from sklearn.decomposition import PCA
         from sklearn.preprocessing import StandardScaler
