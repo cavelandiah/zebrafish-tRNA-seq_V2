@@ -23,3 +23,10 @@ This repository provides code to reproduce the results on OSX/Linux presented in
 - biopython
 - scipy
 - BCBio
+
+# How to run pipelin
+
+create `raw/rawr_reads` folder and copy fastq files there
+
+call snakemake:
+`snakemake 'results/all.txt' -c2`
