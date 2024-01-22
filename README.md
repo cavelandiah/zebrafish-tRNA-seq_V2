@@ -2,7 +2,7 @@
 
 This repository provides code to reproduce the results on OSX/Linux presented in [todo: add doi and link to bioarxiv when online].
 
-### dependencies are the follwing tools:
+### dependencies are the following tools:
 
 - Snakemake (https://snakemake.readthedocs.io/en/stable/#getting-started)
 - fastp
