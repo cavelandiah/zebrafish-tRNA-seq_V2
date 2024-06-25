@@ -1,6 +1,6 @@
 # zebrafish-tRNA-seq
 
-This repository provides code to reproduce the results on OSX/Linux presented in [todo: add doi and link to bioarxiv when online].
+This repository provides code to reproduce the results on OSX/Linux presented in [https://doi.org/10.1101/2024.01.30.575011 ].
 
 ### dependencies are the following tools:
 
