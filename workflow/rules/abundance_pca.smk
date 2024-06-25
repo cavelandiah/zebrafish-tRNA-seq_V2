@@ -382,7 +382,7 @@ rule get_all_abundance_pca_plots:
         'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-qc/abundance_pca_BS.pdf',
         'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-qc/abundance_pca_all.pdf',
     output:
-        'results/abundance/pcs-done.txt'
+        'results/abundance/{reads_filter}_{ref_set}_pca-done.txt'
     run:
         with open(str(output),'w') as file:
             for f in input:
