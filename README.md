@@ -26,7 +26,9 @@ This repository provides code to reproduce the results on OSX/Linux presented in
 
 # How to run pipelin
 
-create `raw/rawr_reads` folder and copy fastq files there
+create `raw/rawr_reads` folder and copy your fastq files there. The fasq files for reproducing the results presented in Rappol et al. 2024 can be downloaded here: https://dataview.ncbi.nlm.nih.gov/object/PRJNA1061456.
+
+set up the samples.csv file with metadata for each sample
 
 call snakemake:
 `snakemake 'results/all.txt' -c2`
