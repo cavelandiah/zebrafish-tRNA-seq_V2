@@ -55,7 +55,7 @@ rule plot_dist_hist:
 rule multimapper_vs_dist:
     input:
         edit_dist_tsv = 'resources/references/cluster/{ref_set}/edit_dist.tsv',
-        multimapper_summary_tsv = 'resources/multimappers/pre-filter_{reads_filter}/{ref_set}/multimapper_all.tsv',
+        multimapper_summary_tsv = 'resources/multimappers/pre-filter_{reads_filter}/{ref_set}/multimapper_between_refs.tsv',
     output:
         plot = 'qc/cluster/pre-filter_{reads_filter}/{ref_set}/dist_multimapper.pdf',
         summary_tsv = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/dist_multimapper.tsv'
@@ -220,7 +220,7 @@ rule cluster_by_editdist:
 
 rule multimapper_cluster:
     input:
-        tsv = 'resources/multimappers/pre-filter_{reads_filter}/{ref_set}/cluster-editdist-{e_cutoff}/{treatment}/multimappers_between_clusters.tsv',
+        tsv = 'resources/multimappers/pre-filter_{reads_filter}/{ref_set}/cluster-editdist-{e_cutoff}_multimappers_between_clusters_{treatment}.tsv',
         cluster_names = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusters-editdist-{e_cutoff}.yaml',
         abundance_tsv = 'resources/coverage/pre-filter_{reads_filter}/{ref_set}/min_coverage_summary_DM.tsv',
     output:
@@ -350,9 +350,8 @@ rule multimapper_cluster:
 
 rule get_cluster_names:
     input:
-        mismatch_tsvs = expand('resources/coverage_counts/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/{sample}_per_cluster.tsv', reads_filter = '{reads_filter}',ref_set='{ref_set}', sample = dm_samples, e_cutoff='{e_cutoff}', m_cutoff='{m_cutoff}' ),
+        mismatch_tsvs = expand('resources/coverage_counts/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/{sample}_per_cluster.tsv', reads_filter = '{reads_filter}', ref_set='{ref_set}', sample = dm_samples, e_cutoff='{e_cutoff}', m_cutoff='{m_cutoff}' ),
         cluster_names = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusternames-ed-{e_cutoff}-mm-{m_cutoff}_{treatment}.yaml',
-
     output:
         cluster_names = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/anticodonbased_clusternames-ed-{e_cutoff}-mm-{m_cutoff}_{treatment}.yaml',
     run:
