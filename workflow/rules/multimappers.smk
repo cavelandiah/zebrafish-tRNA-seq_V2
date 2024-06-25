@@ -234,6 +234,62 @@ def get_multimappers_between_clusters(sam_file, cluster_file, cluster_name_file,
 
     multimapper_df.to_csv(out_file ,sep = '\t',index=False)
 
+def get_multimapper_stats(sam_file,cluster_file, cluster_name_file):
+    with open(cluster_file) as file:
+        cluster_dict = yaml.safe_load(file)
+    with open(cluster_name_file) as file:
+        cluster_name_dict = yaml.safe_load(file)
+    df = pd.read_csv(sam_file, sep="\t")
+    read_count = len(list(set(df['QNAME'].to_list())))
+
+    df['CLUSTER'] = df.apply(lambda row: cluster_dict[row['RNAME']] if row['RNAME'] in cluster_dict.keys() else 'Nan' , axis = 1)
+    df.drop_duplicates(subset=["CLUSTER", "QNAME"], keep='first', inplace=True)
+    df=df.groupby('QNAME').count()
+    counts = df['CLUSTER'].value_counts()
+    print(counts)
+    uniquemappers = counts[1]
+    multimappers = read_count-uniquemappers
+    doublemappers = counts[2]
+    tripplemappers = counts[3]
+    highermappers = read_count - counts[1] - counts[2] - counts[3]
+
+    return read_count, uniquemappers, multimappers, doublemappers, tripplemappers, highermappers
+
+
+rule get_multimapper_stats_r:
+    input:
+        sams=expand('resources/filtered-mappings/pre-filter_{reads_filter}/{ref_set}/mapped/{sample}.sam', reads_filter='{reads_filter}', ref_set = '{ref_set}', sample=SAMPLES, dist='{dist}'),
+        clusters = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}.yaml',
+        cluster_names = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/anticodonbased_clusternames-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}.yaml',
+    output:
+        mutimapper_summary = 'resources/multimappers/pre-filter_{reads_filter}/{ref_set}/multimapper_stats-{e_cutoff}-mm-{m_cutoff}_{c_treatment}_multimappers_between_clusters.tsv'
+    run:
+        import pandas as pd
+        data = []
+        for sam in input.sams:
+            sample = sam.split('/')[-1].replace('.sam','')
+            print(sample)
+
+            treatment = sample_dict[sample]['treatment']
+            time = sample_dict[sample]['timepoint']
+            mapped_reads, unique_reads, multimappers, double, tripple, higher =  get_multimapper_stats(sam, input.clusters, input.cluster_names)
+            data.append({'sample': sample,
+                         'treatment': treatment,
+                         'time point': time,
+                         'mapped reads': mapped_reads,
+                         'unique reads': unique_reads,
+                         'multimappers': multimappers,
+                         'double mappers': double,
+                         'tripple mappers': tripple,
+                         '>3 clusters mapper': higher,
+                         'unique fraction': unique_reads/mapped_reads,
+                         'multimapper fraction': multimappers/mapped_reads,
+                         })
+        df = pd.DataFrame.from_dict(data)
+        df.set_index('sample', inplace =True)
+        df.to_csv(output.mutimapper_summary,sep='\t')
+        print(df.head())
+
 
 rule get_multimappers_per_sample:
     input:
