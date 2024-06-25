@@ -7,7 +7,7 @@ rule per_cluster_per_timepoint_position_reference:
     input:
         mismatch_tsvs = expand('resources/coverage_counts/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/{sample}.tsv', reads_filter = '{reads_filter}',ref_set='{ref_set}', sample = SAMPLES, e_cutoff='{e_cutoff}', m_cutoff='{m_cutoff}' ),
         clusters = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM.yaml',
-        cluster_names = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/anticodonbased_clusternames-ed-{e_cutoff}-mm-{m_cutoff}_DM.yaml'reads_filter = '{reads_filter}',ref_set='{ref_set}',
+        cluster_names = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/anticodonbased_clusternames-ed-{e_cutoff}-mm-{m_cutoff}_DM.yaml',
     output:
         merged_pdf = 'results/modifications/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_DM/per-cluster-and-timepoint_position-reference-heatmap/{treatment}/{mismatch_type}/all_clusters.pdf'
     run:
