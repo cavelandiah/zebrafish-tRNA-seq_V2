@@ -1,9 +1,5 @@
 configfile: "config/config.yaml"
 
-# workdir: "path/to/workdir"
-# conda: "envs/mapping.yaml"
-# snakemake --use-conda -n results/mapped/A.sorted.bam
-
 import pandas as pd
 
 samples_df = pd.read_csv(config["samples_tsv"], sep="\t")
@@ -21,13 +17,6 @@ samples_df.set_index("fastq", inplace=True)
 sample_dict = samples_df.to_dict(orient="index")
 samples_per_treatment = {'DM': dm_samples, 'MOCK': mock_samples, 'BS': BS_SAMPLES }
 
-
-PROBES = pd.read_csv(config["probes_tsv"], sep="\t")["id"].to_list()
-probes_dict = (
-    pd.read_csv(config["probes_tsv"], sep="\t")
-    .set_index("id")
-    .to_dict(orient="index")
-)
 
 wildcard_constraints:
     sample="[A-Za-z0-9]+",
@@ -73,7 +62,6 @@ include: "rules/abundance_plots.smk"
 include: "rules/coverage.smk"
 include: "rules/coverage_plots.smk"
 include: "rules/modifications.smk"
-# include: "rules/probes_scan.smk"
 include: "rules/abundance.smk"
 include: "rules/abundance_pca.smk"
 include: 'rules/duplication_rate.smk'
