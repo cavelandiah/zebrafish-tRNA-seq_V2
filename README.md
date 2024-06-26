@@ -1,11 +1,64 @@
 # zebrafish-tRNA-seq
 
-This repository provides code to reproduce the results presented in [https://doi.org/10.1101/2024.01.30.575011 ] on OSX/Linux.
+This repository provides code to reproduce the results presented in [https://doi.org/10.1101/2024.01.30.575011](https://doi.org/10.1101/2024.01.30.575011) on OSX/Linux.
 
-## download this workflow
+## Install Dependencies
 
-Download this Snakemake wokflow, e.g. with git clone:
-`git clone git@github.com:mwaldl/zebrafish-tRNA-seq.git`
+Please install the following software:
+
+- [Snakemake](https://snakemake.readthedocs.io/en/stable/#getting-started)
+- fastp
+- cutadapt
+- umi_tools
+- cmalign
+- segemehl
+- python
+
+and the following Python 3 modules:
+
+- pandas
+- sklearn
+- numpy
+- matplotlib
+- seaborn
+- yaml
+- biopython
+- scipy
+- BCBio
+
+We recommend installation via Conda, as explained below.
+
+### Install Conda
+
+The installation instructions are linked below:
+
+[Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)
+
+### Setting Up the Conda Environment
+
+1. **Create a new Conda environment with all necessary packages:**
+
+    ```bash
+    conda create -n zebrafish python=3.8 \
+        bioconda::snakemake \
+        bioconda::fastp bioconda::cutadapt bioconda::umi_tools bioconda::cmalign bioconda::segemehl \
+        conda-forge::numpy conda-forge::pandas conda-forge::matplotlib-base conda-forge::seaborn-base conda-forge::pyyaml \
+        conda-forge::biopython conda-forge::scipy bioconda::bcbio-nextgen conda-forge::scikit-learn
+    ```
+
+2. **Activate the Conda environment:**
+
+    ```bash
+    conda activate zebrafish
+    ```
+
+## Download this Workflow
+
+Download this Snakemake workflow, e.g., with `git clone`:
+
+```bash
+git clone git@github.com:mwaldl/zebrafish-tRNA-seq.git
+```
 
 ## set up input files
 
@@ -23,31 +76,26 @@ Required inputs are the demultiplexed fastq sequencing files, a file with meta d
 - Mitochondrial tRNAs need to be provided at the path specified in the config file (eg. `mitochondrial_tRNAs_from_mt_tRNADB: 'raw/references/tRNAdb/mit_from_tRNAdb.fst'`, downloaded from tRNADB, included with the worklflow).
 - A manually currated reference genome, including snps found during our analysis, is provided at `raw/references/manual.fa`.
 
-## install dependencies
+## How to run pipelin
 
-### dependencies are the following tools:
+After you downloaded the worklflow, edited inoutfiles and parameters as needed and installed the dependencies via Conda, you can 
 
-- Snakemake (https://snakemake.readthedocs.io/en/stable/#getting-started)
-- fastp
-- cutadapt
-- umi_tools
-- cmalign
-- segemehl
+1. move to the worklflow directory
 
+    ```bash
+    cd zebrafish-tRNA-seq
 
-### as well as python3 and the following python modules
-- pandas
-- sklearn
-- numpy
-- matplotlib
-- seaborn
-- yaml
-- shutil
-- biopython
-- scipy
-- BCBio
+    ```
 
-# How to run pipelin
+2. activate the conda enviornment
+    ```bash
+    conda activate zebrafish
 
-call snakemake:
-`snakemake 'results/all.txt' -c2`
+    ```
+
+3. execute the pipeline
+    ```bash
+    snakemake 'results/all.txt' -c2
+
+    ```
+    Replace '2' with the number of cores you wish to use, at least 2.
