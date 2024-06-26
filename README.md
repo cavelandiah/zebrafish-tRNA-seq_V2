@@ -79,7 +79,7 @@ Required inputs are the demultiplexed fastq sequencing files, a file with meta d
 - Mitochondrial tRNAs need to be provided at the path specified in the config file (e.g., `mitochondrial_tRNAs_from_mt_tRNADB: 'raw/references/tRNAdb/mit_from_tRNAdb.fst'`, downloaded from tRNADB, included with the workflow).
 - A manually curated reference genome, including SNPs found during our analysis, is provided at `raw/references/manual.fa`. This can be edited to fit your needs. Make sure you follow the same nameing scheme.
 
-## How to Run the Pipelin
+## How to Run the Pipeline
 
 After you downloaded the worklflow, edited inoutfiles and parameters as needed and installed the dependencies via Conda, you can 
 
@@ -90,7 +90,7 @@ After you downloaded the worklflow, edited inoutfiles and parameters as needed a
 
     ```
 
-2. activate the conda enviornment
+2. activate the conda enviornment (if not already active)
     ```bash
     conda activate zebrafish
 
