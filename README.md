@@ -1,6 +1,6 @@
 # zebrafish-tRNA-seq
 
-This repository provides code to reproduce the results presented in [https://doi.org/10.1101/2024.01.30.575011](https://doi.org/10.1101/2024.01.30.575011) on OSX/Linux.
+This repository provides code to reproduce the results presented in [https://doi.org/10.1093/nar/gkae595](https://doi.org/10.1093/nar/gkae595) on OSX/Linux.
 
 ## Install Dependencies
 
