@@ -1,7 +1,9 @@
-
 # Author: Maria Waldl • code@waldl.org
 # Version: 2024-01-24
 
+# TODO:
+# Calibrate for automatic labels, is hard-coded to 8 datapoints
+# axs.set_xlim(0,8)
 
 rule per_cluster_per_timepoint_position_reference:
     input:
@@ -41,7 +43,8 @@ rule per_cluster_per_timepoint_position_reference:
         # read data files
         data = []
         for tsv_file in input.mismatch_tsvs:
-            sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
+            sample = tsv_file.split('/')[-1].replace('.tsv', '')
+            #sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
             if sample_dict[sample]['treatment'] != wildcards.treatment:
                 continue
             df = pd.read_csv(tsv_file, sep = '\t')
@@ -71,14 +74,14 @@ rule per_cluster_per_timepoint_position_reference:
             plt.rc('axes', titlesize=50)
             plt.rc('axes', labelsize=20)
             plt.suptitle(str(cluster)+': '+cluster_name+'\n'+wildcards.treatment+' '+plot_column, size = 40)
-            for timepoint, tdf in  cdf.groupby('timepoint'):
+            for timepoint, tdf in cdf.groupby('timepoint'):
                 tdf['position'] = tdf.apply(lambda row: ' '.join([str(row['align_pos']).zfill(3), str(row['canonical_pos']).zfill(3)]), axis = 1)
                 pivot_df = pd.pivot_table(tdf, values=plot_column, index='RNAME', columns='position', aggfunc='mean', fill_value=None, margins=False, dropna=False, margins_name='All', observed=False, sort=True)
                 vmax = 1
                 if plot_column == 'RPM at position':
                     vmax = None
                 sn.heatmap(pivot_df, ax=axs[timepoint-1,0], vmin = 0, vmax = vmax, square = False, linewidths= False, cmap = 'Blues')
-                count_df = tdf.groupby(['RNAME']).mean()
+                count_df = tdf.groupby(['RNAME']).mean(numeric_only=True)
                 for c in count_df.columns:
                     if c != 'RPM':
                         count_df.drop(c,axis=1, inplace=True)
@@ -108,6 +111,7 @@ rule plot_per_timepoint_position_clusters_heatmap:
         import matplotlib.pyplot as plt
         import seaborn as sn
         import numpy as np
+        import subprocess
 
         plot_column = ''
         if wildcards.mismatch_type == 'mismatch':
@@ -130,7 +134,8 @@ rule plot_per_timepoint_position_clusters_heatmap:
 
         data = []
         for tsv_file in input.mismatch_tsvs:
-            sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
+            sample = tsv_file.split('/')[-1].replace('_per_cluster.tsv', '')
+            #sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
             if sample_dict[sample]['treatment'] != wildcards.treatment:
                 continue
             df = pd.read_csv(tsv_file, sep = '\t')
@@ -206,6 +211,7 @@ rule per_cluster_sample_position_mismatch_heatmap:
         import seaborn as sn
         import os
         import numpy as np
+        import subprocess
 
         plot_column = ''
         if wildcards.mismatch_type == 'mismatch':
@@ -229,7 +235,8 @@ rule per_cluster_sample_position_mismatch_heatmap:
 
         data = []
         for tsv_file in input.mismatch_tsvs:
-            sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
+            sample = tsv_file.split('/')[-1].replace('_per_cluster.tsv', '')
+            #sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
             if sample_dict[sample]['treatment'] != wildcards.treatment:
                 continue
             df = pd.read_csv(tsv_file, sep = '\t')
@@ -312,6 +319,7 @@ rule per_cluster_timepoint_position_mismatch_heatmap:
         import seaborn as sn
         import os
         import numpy as np
+        import subprocess
 
         plot_column = ''
         if wildcards.mismatch_type == 'mismatch':
@@ -334,7 +342,8 @@ rule per_cluster_timepoint_position_mismatch_heatmap:
 
         data = []
         for tsv_file in input.mismatch_tsvs:
-            sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
+            sample = tsv_file.split('/')[-1].replace('_per_cluster.tsv', '')
+            #sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
             if sample_dict[sample]['treatment'] != wildcards.treatment:
                 continue
             df = pd.read_csv(tsv_file, sep = '\t')
@@ -422,6 +431,7 @@ rule per_pos_cluster_mismatch_line_plot:
         import matplotlib
         import seaborn as sn
         import os
+        import subprocess
 
         plot_column = ''
         if wildcards.mismatch_type == 'mismatch':
@@ -444,7 +454,8 @@ rule per_pos_cluster_mismatch_line_plot:
 
         data = []
         for tsv_file in input.mismatch_tsvs:
-            sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
+            sample = tsv_file.split('/')[-1].replace('_per_cluster.tsv', '')
+            #sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
             if sample_dict[sample]['treatment'] != wildcards.treatment:
                 continue
             df = pd.read_csv(tsv_file, sep = '\t')
@@ -513,7 +524,7 @@ rule per_pos_cluster_mismatch_line_plot:
                 p_df['rpm factor'] = p_df['RPM']/p_df['all reads']
                 p_df['ref_C_rpm'] = p_df.apply(lambda row: row['ref_C']*row['rpm factor'], axis =1)
 
-                mean_p_df = p_df.groupby('timepoint').mean()
+                mean_p_df = p_df.groupby('timepoint').mean(numeric_only=True)
                 if mean_p_df[plot_column].fillna(value = 0).max() <cutoff and wildcards.mismatch_type != 'positionCoverage':
                     continue
                 if wildcards.mismatch_type == 'm5C' and mean_p_df['ref_C_rpm'].fillna(value = 0).max() < config['min_C_fraction']:
@@ -576,6 +587,7 @@ rule per_pos_cluster_mismatch_line_plot_small_legend:
         import matplotlib
         import seaborn as sn
         import os
+        import subprocess
 
         plot_column = ''
         if wildcards.mismatch_type == 'mismatch':
@@ -598,7 +610,8 @@ rule per_pos_cluster_mismatch_line_plot_small_legend:
 
         data = []
         for tsv_file in input.mismatch_tsvs:
-            sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
+            sample = tsv_file.split('/')[-1].replace('_per_cluster.tsv', '')
+            #sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
             if sample_dict[sample]['treatment'] != wildcards.treatment:
                 continue
             df = pd.read_csv(tsv_file, sep = '\t')
@@ -667,7 +680,7 @@ rule per_pos_cluster_mismatch_line_plot_small_legend:
                 p_df['rpm factor'] = p_df['RPM']/p_df['all reads']
                 p_df['ref_C_rpm'] = p_df.apply(lambda row: row['ref_C']*row['rpm factor'], axis =1)
 
-                mean_p_df = p_df.groupby('timepoint').mean()
+                mean_p_df = p_df.groupby('timepoint').mean(numeric_only=True)
                 if mean_p_df[plot_column].fillna(value = 0).max() <cutoff and wildcards.mismatch_type != 'positionCoverage':
                     continue
                 if wildcards.mismatch_type == 'm5C' and mean_p_df['ref_C_rpm'].fillna(value = 0).max() < config['min_C_fraction']:
@@ -730,6 +743,7 @@ rule per_pos_cluster_mismatch_coverage_plot:
         import matplotlib
         import seaborn as sn
         import os
+        import subprocess
 
         plot_column = ''
         if wildcards.mismatch_type == 'mismatch':
@@ -750,7 +764,8 @@ rule per_pos_cluster_mismatch_coverage_plot:
 
         data = []
         for tsv_file in input.mismatch_tsvs:
-            sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
+            sample = tsv_file.split('/')[-1].replace('_per_cluster.tsv', '')
+            #sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
             if sample_dict[sample]['treatment'] != wildcards.treatment:
                 continue
             df = pd.read_csv(tsv_file, sep = '\t')
@@ -829,7 +844,7 @@ rule per_pos_cluster_mismatch_coverage_plot:
                 p_df['C on refC rpm'] = p_df.apply(lambda row: row['C on refC']*row['rpm factor'], axis =1)
 
 
-                mean_p_df = p_df.groupby('timepoint').mean()
+                mean_p_df = p_df.groupby('timepoint').mean(numeric_only=True)
                 if mean_p_df[plot_column].fillna(value = 0).max() <cutoff and wildcards.mismatch_type != 'positionCoverage':
                     continue
                 if wildcards.mismatch_type == 'm5C' and mean_p_df['ref_C_rpm'].fillna(value = 0).max() < config['min_C_fraction']:
@@ -908,6 +923,7 @@ rule per_pos_ref_mismatch_line_plot:
         import matplotlib.pyplot as plt
         import seaborn as sn
         import os
+        import subprocess
 
         plot_column = ''
         if wildcards.mismatch_type == 'mismatch':
@@ -930,7 +946,8 @@ rule per_pos_ref_mismatch_line_plot:
 
         data = []
         for tsv_file in input.mismatch_tsvs:
-            sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
+            sample = tsv_file.split('/')[-1].replace('.tsv', '')
+            #sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
             if sample_dict[sample]['treatment'] != wildcards.treatment:
                 continue
             df = pd.read_csv(tsv_file, sep = '\t')
@@ -968,10 +985,10 @@ rule per_pos_ref_mismatch_line_plot:
 
             i = 0
 
-            for pos, p_df in  cdf.groupby('position'):
+            for pos, p_df in cdf.groupby('position'):
                 if p_df[plot_column].fillna(value = 0).max() < 0.25:
                     continue
-                mean_p_df = p_df.groupby('timepoint').mean()
+                mean_p_df = p_df.groupby('timepoint').mean(numeric_only=True)
                 mean_p_df.reset_index(inplace = True)
                 mean_p_df.plot.line(x = 'timepoint', y = plot_column, ax = axs, color = colors[i], label = pos)
                 p_df.plot.scatter(x = 'timepoint', y = plot_column, ax = axs, color = colors[i], label = pos, alpha = 0.6, marker = symbols[i] )
@@ -998,7 +1015,7 @@ rule per_pos_ref_mismatch_line_plot:
 
 rule get_all_m5C_plots:
     input:
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster-and-timepoint_position-reference-heatmap/BS/m5C/all_clusters.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster-and-timepoint_position-reference-heatmap/BS/m5C/all_clusters.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_timepoint-position_heatmap/BS/m5C/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_timepoint-position_heatmap/BS/refCfraction/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_sample-position_heatmap/BS/m5C/summary.pdf',
@@ -1010,10 +1027,10 @@ rule get_all_m5C_plots:
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/BS/min_cov_'+str(config['min_coverage'])+'/m5C/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/BS/min_cov_500/m5C/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/BS/min_cov_0/m5C/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-timepoint_position-cluster_heatmap/BS/m5C/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-timepoint_position-cluster_heatmap/BS/refCfraction/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-timepoint_position-cluster_heatmap/BS/m5C/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-timepoint_position-cluster_heatmap/BS/refCfraction/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-high-coverage-ref_modified-position_line-plot/BS/min_cov_'+str(config['min_coverage'])+'/m5C/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster-and-timepoint_position-reference-heatmap/BS/m5C/all_clusters.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster-and-timepoint_position-reference-heatmap/BS/m5C/all_clusters.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_timepoint-position_heatmap/BS/m5C/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_timepoint-position_heatmap/BS/refCfraction/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_sample-position_heatmap/BS/m5C/summary.pdf',
@@ -1025,8 +1042,8 @@ rule get_all_m5C_plots:
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/BS/min_cov_'+str(config['min_coverage'])+'/m5C/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/BS/min_cov_500/m5C/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/BS/min_cov_0/m5C/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-timepoint_position-cluster_heatmap/BS/m5C/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-timepoint_position-cluster_heatmap/BS/refCfraction/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-timepoint_position-cluster_heatmap/BS/m5C/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-timepoint_position-cluster_heatmap/BS/refCfraction/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-high-coverage-ref_modified-position_line-plot/BS/min_cov_'+str(config['min_coverage'])+'/m5C/summary.pdf',
     output:
         'results/modifications/get_all_m5C_calls_plots'
@@ -1051,24 +1068,24 @@ rule get_all_mismatch_plots:
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_sample-position_heatmap/{treatment}/mismatch/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_sample-position_heatmap/{treatment}/stopfraction/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_sample-position_heatmap/{treatment}/mismatchStop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_'+str(config['min_coverage'])+'/mismatch/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_'+str(config['min_coverage'])+'/stop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_'+str(config['min_coverage'])+'/mismatchStop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_'+str(config['min_coverage'])+'/stopfraction/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_0/mismatch/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_0/stop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_0/mismatchStop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_0/stopfraction/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_'+str(config['min_coverage'])+'/mismatch/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_'+str(config['min_coverage'])+'/stop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_0/mismatch/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_0/stop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_'+str(config['min_coverage'])+'/mismatch/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_'+str(config['min_coverage'])+'/stop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_0/mismatch/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_0/mismatchStop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_0/stopfraction/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_0/stop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_'+str(config['min_coverage'])+'/mismatch/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_'+str(config['min_coverage'])+'/stop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_'+str(config['min_coverage'])+'/mismatchStop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_'+str(config['min_coverage'])+'/stopfraction/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_0/mismatch/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_0/stop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_0/mismatchStop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_0/stopfraction/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_'+str(config['min_coverage'])+'/mismatch/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_'+str(config['min_coverage'])+'/stop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_0/mismatch/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_0/stop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_'+str(config['min_coverage'])+'/mismatch/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_'+str(config['min_coverage'])+'/stop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_0/mismatch/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_0/mismatchStop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_0/stopfraction/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_0/stop/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-timepoint_position-cluster_heatmap/{treatment}/mismatch/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-timepoint_position-cluster_heatmap/{treatment}/stop/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-timepoint_position-cluster_heatmap/{treatment}/stopfraction/summary.pdf',
@@ -1092,24 +1109,24 @@ rule get_all_mismatch_plots:
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_sample-position_heatmap/{treatment}/mismatch/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_sample-position_heatmap/{treatment}/stopfraction/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_sample-position_heatmap/{treatment}/mismatchStop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_'+str(config['min_coverage'])+'/mismatch/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_'+str(config['min_coverage'])+'/stop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_'+str(config['min_coverage'])+'/mismatchStop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_'+str(config['min_coverage'])+'/stopfraction/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_0/mismatch/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_0/stop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_0/mismatchStop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_0/stopfraction/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_'+str(config['min_coverage'])+'/mismatch/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_'+str(config['min_coverage'])+'/stop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_0/mismatch/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_0/stop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_'+str(config['min_coverage'])+'/mismatch/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_'+str(config['min_coverage'])+'/stop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_0/mismatch/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_0/mismatchStop/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_0/stopfraction/summary.pdf',
-        'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_0/stop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_'+str(config['min_coverage'])+'/mismatch/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_'+str(config['min_coverage'])+'/stop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_'+str(config['min_coverage'])+'/mismatchStop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_'+str(config['min_coverage'])+'/stopfraction/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_0/mismatch/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_0/stop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_0/mismatchStop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-smaller-legend/{treatment}/min_cov_0/stopfraction/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_'+str(config['min_coverage'])+'/mismatch/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_'+str(config['min_coverage'])+'/stop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_0/mismatch/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction/{treatment}/min_cov_0/stop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_'+str(config['min_coverage'])+'/mismatch/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_'+str(config['min_coverage'])+'/stop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_0/mismatch/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_0/mismatchStop/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_0/stopfraction/summary.pdf',
+        #'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_per-position-mismatch-fraction-and-coverage/{treatment}/min_cov_0/stop/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-timepoint_position-cluster_heatmap/{treatment}/mismatch/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-timepoint_position-cluster_heatmap/{treatment}/stop/summary.pdf',
         'results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-timepoint_position-cluster_heatmap/{treatment}/stopfraction/summary.pdf',

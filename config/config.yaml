@@ -56,7 +56,7 @@ pre_mapping: # on all refs
     maxinterval: '200' #1000
     difference: '1' # 2,3
   DM:
-    e_value: '500'
+    evalue: '500'
     accuracy: '85'
     maxinterval: '200' #1000
     difference: '1' # 2,3

@@ -2,6 +2,7 @@
 # Author: Maria Waldl • code@waldl.org
 # Version: 2024-01-24
 
+import json
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -74,7 +75,7 @@ rule mapping_summary_compareDM_ref_sets:
     run:
         title = f"comparison of refernce sets on demethy;ated samples (5'T trimming method: {config['poly_T_processing']})"
         mapping_ids =  [tsv.split('/')[-1].replace('.tsv', '') for tsv in input.tsvs]
-        mapping_ids = [{'ref_set':mid.split('_')[0], 'Ttrimming':mid.split('_')[2], 'sample': mid.split('_')[3]} for mid in mapping_ids]
+        mapping_ids = [{'ref_set':mid.split('_')[0], 'Ttrimming':mid.split('_')[2], 'sample': mid.split('_', 3)[-1]} for mid in mapping_ids]
         mapping_ids = [ ' '.join([sample_dict[mid['sample']]['treatment'],str(sample_dict[mid['sample']]['timepoint']), mid['sample'],  mid['ref_set']]) for mid in mapping_ids]
         print_mapping_summary(input.tsvs, mapping_ids,title, output.tsv, output.pdf)
 
@@ -87,7 +88,7 @@ rule mapping_summary_all_samples:
     run:
         title = f"summary {wildcards.ref_set} (5'T trimming method: {config['poly_T_processing']})"
         mapping_ids =  [tsv.split('/')[-1].replace('.tsv', '') for tsv in input.tsvs]
-        mapping_ids = [{'ref_set':mid.split('_')[0], 'Ttrimming':mid.split('_')[2], 'sample': mid.split('_')[3]} for mid in mapping_ids]
+        mapping_ids = [{'ref_set':mid.split('_')[0], 'Ttrimming':mid.split('_')[2], 'sample': mid.split('_', 3)[-1]} for mid in mapping_ids]
         mapping_ids = [ ' '.join([sample_dict[mid['sample']]['treatment'],str(sample_dict[mid['sample']]['timepoint']), mid['sample']]) for mid in mapping_ids]
         print_mapping_summary(input.tsvs, mapping_ids,title, output.tsv, output.pdf)
 

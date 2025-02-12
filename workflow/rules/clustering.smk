@@ -365,7 +365,8 @@ rule get_cluster_names:
 
         data = []
         for tsv_file in input.mismatch_tsvs:
-            sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
+            sample = tsv_file.split('/')[-1].replace('_per_cluster.tsv', '')
+            #sample = tsv_file.split('/')[-1].replace('.tsv', '').split('_')[0]
             if sample_dict[sample]['treatment'] != wildcards.treatment:
                 continue
             df = pd.read_csv(tsv_file, sep = '\t')
@@ -387,7 +388,7 @@ rule get_cluster_names:
                 df_p.drop(columns= ['all nts'], inplace = True)
                 data.append(df_p)
         df =  pd.concat(data)
-        df = df.groupby(['canonical_pos','cluster' ,'timepoint']).mean()
+        df = df.groupby(['canonical_pos','cluster','timepoint']).mean()
         df.reset_index(inplace = True)
         df = df.groupby(['canonical_pos','cluster']).mean()
         df.drop(columns= ['timepoint'], inplace = True)

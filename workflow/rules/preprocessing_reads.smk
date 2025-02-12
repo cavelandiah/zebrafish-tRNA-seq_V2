@@ -61,7 +61,7 @@ rule get_umi:
     input:
         "resources/filteres-reads/a_{sample}.fastq"
     output:
-        fastq = "resources/filteres-reads/a_u_{sample,[A-Za-z0-9]+}.fastq",
+        fastq = "resources/filteres-reads/a_u_{sample,[A-Za-z0-9_]+}.fastq",
         log = "qc/trimming/a_u_{sample}_umi-tools.log"
     shell:
         # Author: Maria Waldl • code@waldl.org

@@ -107,7 +107,8 @@ rule coverage_plots_per_group_sample:
 
         data = []
         for tsv_file in input.mismatch_tsvs:
-            sample = tsv_file.split("/")[-1].replace(".tsv", "").split("_")[0]
+            sample = tsv_file.split("/")[-1].replace("_per_cluster.tsv", "")
+            #sample = tsv_file.split("/")[-1].replace(".tsv", "").split("_")[0]
             if sample_dict[sample]["treatment"] != wildcards.treatment:
                 continue
             df = pd.read_csv(tsv_file, sep="\t")
@@ -136,21 +137,25 @@ rule coverage_plots_per_group_sample:
         plot_dir = "/".join(output.pdf.split("/")[0:-1])
         for group, g_df in df.groupby("cluster"):
             g_df["cluster"] = group
-            fig = plt.figure(figsize=(36, 36), constrained_layout=True)
+            fig = plt.figure(figsize=(36, 16), constrained_layout=True)
             cluster_name = group
 
             if group != "Nan" and int(group) in cluster_name_dict.keys():
                 cluster_name = cluster_name_dict[int(group)]
             plt.suptitle("cluster: " + cluster_name + "\ntreatment: " + wildcards.treatment)
 
-            subfigures = fig.subfigures(7, 3, hspace=0.0)
+            if wildcards.treatment == "DM":
+                subfigures = fig.subfigures(3, 3, hspace=0.0)
+            elif wildcards.treatment == "MOCK":
+                subfigures = fig.subfigures(3, 5, hspace=0.0)
             fig_path = os.path.join(plot_dir, cluster_name + ".pdf")
             pdfs.append(fig_path)
 
             for timepoint, t_df in g_df.groupby("timepoint"):
                 for sample, sample_df in t_df.groupby("sample"):
                     replicate = sample_dict[sample]['replicate']
-                    axs = subfigures[timepoint - 1, replicate-1].subplots(
+                    axs = subfigures[timepoint, replicate-1].subplots(
+                    #axs = subfigures[timepoint - 1, replicate-1].subplots(
                         nrows=2,
                         ncols=1,
                         gridspec_kw={"height_ratios": [8, 1], "hspace": 0.0, "wspace": 0},
@@ -202,6 +207,12 @@ rule coverage_plots_per_group_sample:
                     axs[1].set_ylim(0, 1)
                     axs[1].set_ylabel("references\ncomposition")
                     axs[1].set_xlabel("alignment position (canonical position)")
+                    if wildcards.treatment == "DM":
+                        if replicate-1 == 2:
+                            timepoint += 1
+                    elif wildcards.treatment == "MOCK":
+                        if replicate-1 == 3:
+                            timepoint += 1
 
             fig.savefig(fig_path)
             plt.close("all")
@@ -217,20 +228,20 @@ rule get_all_coverage_plots:
     input:
         'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_DM/color_scheme_mismatch/summary.pdf',
         'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_MOCK/color_scheme_mismatch/summary.pdf',
-        'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_mismatch/summary.pdf',
+        #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_mismatch/summary.pdf',
         'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_DM/color_scheme_stop/summary.pdf',
         'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_MOCK/color_scheme_stop/summary.pdf',
-        'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_stop/summary.pdf',
-        'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_all/summary.pdf',
-        'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_bisulfite/summary.pdf',
+        #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_stop/summary.pdf',
+        #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_all/summary.pdf',
+        #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_bisulfite/summary.pdf',
         'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_DM/color_scheme_mismatch/summary.pdf',
         'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_MOCK/color_scheme_mismatch/summary.pdf',
-        'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_mismatch/summary.pdf',
+        #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_mismatch/summary.pdf',
         'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_DM/color_scheme_stop/summary.pdf',
         'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_MOCK/color_scheme_stop/summary.pdf',
-        'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_stop/summary.pdf',
-        'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_all/summary.pdf',
-        'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_bisulfite/summary.pdf',
+        #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_stop/summary.pdf',
+        #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_all/summary.pdf',
+        #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_bisulfite/summary.pdf',
     output:
         'results/coverage_plots/done.txt'
     run:

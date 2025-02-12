@@ -15,6 +15,7 @@ rule plot_percluster_time_abundance_lineperreference:
         import pandas as pd
         import matplotlib.pyplot as plt
         import yaml
+        import subprocess
 
         gdf = pd.read_csv(input.tsv, sep="\t",)
         gdf.drop(columns = [c for c in gdf.columns if config['abundance_score'] not in c and c not in [ 'RNAME']], inplace = True)
@@ -27,7 +28,7 @@ rule plot_percluster_time_abundance_lineperreference:
         gdf['cluster'] = gdf.apply(lambda row: cluster_dict[row['RNAME']] if row['RNAME'] in cluster_dict.keys() else 'unknown', axis =1)
         gdf['cluster_name'] = gdf.apply(lambda row: cluster_name_dict[row['cluster']] if row['cluster'] in cluster_name_dict.keys() else 'low coverage', axis =1)
 
-        print(gdf.head())
+        #print(gdf.head())
         gdf.drop(columns = ['cluster'], inplace = True)
 
         pdfs = []
@@ -54,7 +55,7 @@ rule plot_percluster_time_abundance_lineperreference:
             plt.rc('legend', fontsize=7) #fontsize of the legend
 
 
-            print(cluster)
+            #print(cluster)
             df.drop(columns=['cluster_name'], inplace = True)
             df['RNAME'] = df.apply(lambda row: row['RNAME'].split('(')[0], axis =1)
             #df.reset_index(inplace = True)
@@ -71,7 +72,7 @@ rule plot_percluster_time_abundance_lineperreference:
 
             labels = df['name'].to_list()
             labels = sorted(set(labels), key=labels.index)
-            group_df = df.groupby('time').mean()
+            group_df = df.groupby('time').mean(numeric_only=True)
             group_df.reset_index(inplace = True)
             group_df.sort_values('time', inplace = True)
             times = group_df['time'].to_list()
@@ -97,7 +98,8 @@ rule plot_percluster_time_abundance_lineperreference:
             #axs.tick_params(axis='y', which='major', pad=10)
 
             axs.set_xticks(times)
-            axs.set_xticklabels([l.replace(',', ',\n') for l in labels], rotation = 90)
+            #CAVH
+            #axs.set_xticklabels([l.replace(',', ',\n') for l in labels], rotation = 90)
             axs.set_ylabel('fraction of reads')
             axs.set_xlabel(None)
             handles, labels = axs.get_legend_handles_labels()
@@ -144,6 +146,7 @@ rule plot_percluster_time_abundance_lineperreference_small_legend:
         import pandas as pd
         import matplotlib.pyplot as plt
         import yaml
+        import subprocess
 
         gdf = pd.read_csv(input.tsv, sep="\t",)
         gdf.drop(columns = [c for c in gdf.columns if config['abundance_score'] not in c and c not in [ 'RNAME']], inplace = True)
@@ -157,7 +160,7 @@ rule plot_percluster_time_abundance_lineperreference_small_legend:
         gdf['cluster'] = gdf.apply(lambda row: cluster_dict[row['RNAME']] if row['RNAME'] in cluster_dict.keys() else 'unknown', axis =1)
         gdf['cluster_name'] = gdf.apply(lambda row: cluster_name_dict[row['cluster']] if row['cluster'] in cluster_name_dict.keys() else 'low coverage', axis =1)
 
-        print(gdf.head())
+        #print(gdf.head())
         gdf.drop(columns = ['cluster'], inplace = True)
 
         pdfs = []
@@ -188,7 +191,7 @@ rule plot_percluster_time_abundance_lineperreference_small_legend:
             plt.rc('legend', fontsize=4) #fontsize of the legend
 
 
-            print(cluster)
+            #print(cluster)
             df.drop(columns=['cluster_name'], inplace = True)
             df['RNAME'] = df.apply(lambda row: row['RNAME'].split('(')[0], axis =1)
             #df.reset_index(inplace = True)
@@ -205,7 +208,7 @@ rule plot_percluster_time_abundance_lineperreference_small_legend:
 
             labels = df['name'].to_list()
             labels = sorted(set(labels), key=labels.index)
-            group_df = df.groupby('time').mean()
+            group_df = df.groupby('time').mean(numeric_only=True)
             group_df.reset_index(inplace = True)
             group_df.sort_values('time', inplace = True)
             times = group_df['time'].to_list()
@@ -231,7 +234,8 @@ rule plot_percluster_time_abundance_lineperreference_small_legend:
             #axs.tick_params(axis='y', which='major', pad=10)
 
             axs.set_xticks(times)
-            axs.set_xticklabels([l.replace(',', ',\n') for l in labels], rotation = 90)
+            #CAVH
+            #axs.set_xticklabels([l.replace(',', ',\n') for l in labels], rotation = 90)
             axs.set_ylabel('fraction of reads')
             axs.set_xlabel(None)
             handles, labels = axs.get_legend_handles_labels()
@@ -290,7 +294,7 @@ rule plot_abundance_boxplots_cluster:
             cluster_name_dict = yaml.safe_load(file)
         df['cluster'] = df.apply(lambda row: cluster_dict[row['RNAME']] if row['RNAME'] in cluster_dict.keys() else 'unknown', axis =1)
         df['cluster_name'] = df.apply(lambda row: cluster_name_dict[row['cluster']] if row['cluster'] in cluster_name_dict.keys() else 'unknowN', axis =1)
-        print(df.head(60))
+        #print(df.head(60))
         df.drop(columns = ['cluster', 'RNAME'], inplace = True)
         #df.reset_index(inplace = True)
         df = df.groupby('cluster_name').sum()
@@ -305,7 +309,7 @@ rule plot_abundance_boxplots_cluster:
         df.sort_values('time', inplace = True)
         labels = df['name'].to_list()
         labels = sorted(set(labels), key=labels.index)
-        group_df = df.groupby('time').mean()
+        group_df = df.groupby('time').mean(numeric_only=True)
         group_df.reset_index(inplace = True)
         group_df.sort_values('time', inplace = True)
         group_df.set_index('time')
@@ -351,6 +355,7 @@ rule plot_abundance_scatterplots_cluster:
         import pandas as pd
         import yaml
         import matplotlib.pyplot as plt
+        import subprocess
 
         df = pd.read_csv(input.tsv, sep="\t",)
         df.drop(columns = [c for c in df.columns if config['abundance_score'] not in c and c != 'RNAME'], inplace = True)
@@ -364,7 +369,7 @@ rule plot_abundance_scatterplots_cluster:
         df['cluster'] = df.apply(lambda row: cluster_dict[row['RNAME']] if row['RNAME'] in cluster_dict.keys() else 'unknown', axis =1)
         df['cluster_name'] = df.apply(lambda row: cluster_name_dict[row['cluster']] if row['cluster'] in cluster_name_dict.keys() else 'low coverage', axis =1)
 
-        print(df.head())
+        #print(df.head())
         df.drop(columns = ['cluster', 'RNAME'], inplace = True)
         #df.reset_index(inplace = True)
         df = df.groupby('cluster_name').sum()
@@ -379,7 +384,7 @@ rule plot_abundance_scatterplots_cluster:
         df.sort_values('time', inplace = True)
         labels = df['name'].to_list()
         labels = sorted(set(labels), key=labels.index)
-        group_df = df.groupby('time').mean()
+        group_df = df.groupby('time').mean(numeric_only=True)
         group_df.reset_index(inplace = True)
         group_df.sort_values('time', inplace = True)
         group_df.set_index('time')
@@ -418,7 +423,7 @@ rule plot_abundance_scatterplots_cluster:
             plt.rc('legend', fontsize=7) #fontsize of the legend
 
             group_df.plot(x = 'time', y=col,  ax = axs, c = '0.35', linewidth = 0.75)
-            print(axs.get_yticks())
+            #print(axs.get_yticks())
             ylim = group_df[col].max()*1.2
             for marker, rep_df in df.groupby('replicate_symbol'):
                 if rep_df[col].max()*1.1>ylim:
@@ -431,7 +436,8 @@ rule plot_abundance_scatterplots_cluster:
             axs.set_ylabel('fraction of reads')
             axs.set_xlabel(None)
             axs.set_xticks(group_df['time'].to_list())
-            axs.set_xticklabels([l.replace(',', ',\n') for l in labels], rotation = 90)
+            #CAVH
+            #axs.set_xticklabels([l.replace(',', ',\n') for l in labels], rotation = 90)
             axs.get_legend().remove()
             axs.set_title(col.split('[')[0].replace('_', '/'))
 
@@ -491,7 +497,7 @@ rule plot_summary_time_cluster_abundance_heatmap:
         df.sort_values('time', inplace = True)
         labels = df['name'].to_list()
         labels = sorted(set(labels), key=labels.index)
-        group_df = df.groupby('time').mean()
+        group_df = df.groupby('time').mean(numeric_only=True)
         group_df.reset_index(inplace = True)
         group_df.sort_values('time', inplace = True)
         group_df.set_index('time')
@@ -598,7 +604,7 @@ rule get_all_abundance_plots:
         # heatmaps with timepoint vs cluster for each treatment
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/DM_summary_time-cluster-abundance_heatmap.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/MOCK_summary_time-cluster-abundance_heatmap.pdf',
-        'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/BS_summary_time-cluster-abundance_heatmap.pdf',
+        #'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/BS_summary_time-cluster-abundance_heatmap.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-4-mm-50_DM/DM_summary_time-cluster-abundance_heatmap.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-2-mm-50_DM/DM_summary_time-cluster-abundance_heatmap.pdf',
         #'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-2-mm-20_DM/DM_summary_time-cluster-abundance_heatmap.pdf',
@@ -606,7 +612,7 @@ rule get_all_abundance_plots:
         # heatmaps with sample vs cluster for each treatment
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/DM_summary_sample-cluster-abundance_heatmap.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/MOCK_summary_sample-cluster-abundance_heatmap.pdf',
-        'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/BS_summary_sample-cluster-abundance_heatmap.pdf',
+        #'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/BS_summary_sample-cluster-abundance_heatmap.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-2-mm-50_DM/DM_summary_sample-cluster-abundance_heatmap.pdf',
         # comparing cluster paramters on DM samples
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-4-mm-50_DM/DM_summary_sample-cluster-abundance_heatmap.pdf',
@@ -614,17 +620,17 @@ rule get_all_abundance_plots:
         # abundance line plots with replicate scatter per cluster
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/DM_per-cluster_time_abundance_scatter/summary.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/MOCK_per-cluster_time_abundance_scatter/summary.pdf',
-        'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/BS_per-cluster_time_abundance_scatter/summary.pdf',
+        #'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/BS_per-cluster_time_abundance_scatter/summary.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-2-mm-50_DM/DM_per-cluster_time_abundance_scatter/summary.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-2-mm-50_DM/MOCK_per-cluster_time_abundance_scatter/summary.pdf',
-        'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-2-mm-50_DM/BS_per-cluster_time_abundance_scatter/summary.pdf',
+        #'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-2-mm-50_DM/BS_per-cluster_time_abundance_scatter/summary.pdf',
         # abundance line plots for each reference per cluster
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/DM_per-cluster_time_abundance_line-per-ref/summary.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/DM_per-cluster_time_abundance_line-per-ref-smaller-legend/summary.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/MOCK_per-cluster_time_abundance_line-per-ref/summary.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/MOCK_per-cluster_time_abundance_line-per-ref-smaller-legend/summary.pdf',
-        'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/BS_per-cluster_time_abundance_line-per-ref/summary.pdf',
-        'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/BS_per-cluster_time_abundance_line-per-ref-smaller-legend/summary.pdf',
+        #'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/BS_per-cluster_time_abundance_line-per-ref/summary.pdf',
+        #'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/BS_per-cluster_time_abundance_line-per-ref-smaller-legend/summary.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-4-mm-50_DM/DM_per-cluster_time_abundance_line-per-ref-smaller-legend/summary.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-2-mm-50_DM/DM_per-cluster_time_abundance_line-per-ref-smaller-legend/summary.pdf',
         # anticodon grouped plots

@@ -365,21 +365,21 @@ rule get_abundance_pca_per_sample_cluster:
 
 rule get_all_abundance_pca_plots:
     input:
-        'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-cluster-sample/ed-3-mm-50_DM/abundance_pca_BS.pdf',
-        'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-cluster-sample/ed-3-mm-50_DM/abundance_pca_DM.pdf',
-        'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-cluster-sample/ed-3-mm-50_DM/abundance_pca_MOCK.pdf',
-        'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-cluster-sample/ed-3-mm-50_DM/abundance_pca_all.pdf',
-        'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-cluster-time/ed-3-mm-50_DM/abundance_pca_BS.pdf',
-        'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-cluster-time/ed-3-mm-50_DM/abundance_pca_DM.pdf',
-        'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-cluster-time/ed-3-mm-50_DM/abundance_pca_MOCK.pdf',
-        'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-cluster-time/ed-3-mm-50_DM/abundance_pca_all.pdf',
+        #'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-cluster-sample/ed-3-mm-50_DM/abundance_pca_BS.pdf',
+        #'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-cluster-sample/ed-3-mm-50_DM/abundance_pca_DM.pdf',
+        #'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-cluster-sample/ed-3-mm-50_DM/abundance_pca_MOCK.pdf',
+        #'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-cluster-sample/ed-3-mm-50_DM/abundance_pca_all.pdf',
+        #'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-cluster-time/ed-3-mm-50_DM/abundance_pca_BS.pdf',
+        #'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-cluster-time/ed-3-mm-50_DM/abundance_pca_DM.pdf',
+        #'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-cluster-time/ed-3-mm-50_DM/abundance_pca_MOCK.pdf',
+        #'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-cluster-time/ed-3-mm-50_DM/abundance_pca_all.pdf',
         'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-qc/abundance_pca_MOCK.pdf',
         'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-qc/abundance_pca_DM.pdf',
-        'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-qc/abundance_pca_BS.pdf',
+        #'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-qc/abundance_pca_BS.pdf',
         'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-qc/abundance_pca_all.pdf',
         'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-qc/abundance_pca_MOCK.pdf',
         'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-qc/abundance_pca_DM.pdf',
-        'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-qc/abundance_pca_BS.pdf',
+        #'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-qc/abundance_pca_BS.pdf',
         'results/abundance/pre-filter_{reads_filter}/{ref_set}/pca-qc/abundance_pca_all.pdf',
     output:
         'results/abundance/{reads_filter}_{ref_set}_pca-done.txt'
