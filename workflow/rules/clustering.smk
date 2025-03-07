@@ -229,7 +229,7 @@ rule multimapper_cluster:
         cluster_abundance = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/cluster-abundanceinfo-ed-{e_cutoff}-mm-{m_cutoff}_{treatment}.txt',
     wildcard_constraints:
         e_cutoff="[0-5]",
-        m_cutoff="\d+",
+        m_cutoff ="[0-9]+",
         treatment = "[A-Z]+"
     run:
         # Author: Maria Waldl • code@waldl.org
@@ -254,14 +254,17 @@ rule multimapper_cluster:
 
 
         cluster_df = cluster_df.merge(df, how='outer', left_index=True, right_index = True )
-
-        # get merged clusters
+        
+        # Get merged clusters CAVH
         df = pd.read_csv(input.tsv, sep="\t")
-
         cluster_count = len(list(set(df['cluster1'].to_list())))
-        clusters = list(set(df['cluster1'].to_list()))
-        clusters = [[str(c)] for c in clusters if str(c)!='nan' and str(c)!='Nan']
+        # List creation: TODO: This is wrong because the cluster list is based on 'cluster1'
+        all_clusters = list(set(df['cluster1'].to_list()))
+        #all_clusters = set(df['cluster1'].dropna().tolist()) | set(df['cluster2'].dropna().tolist())
+        # Clusters in lists [c]
+        clusters = [[str(c)] for c in all_clusters if str(c)!='nan' and str(c)!='Nan']
 
+        # Selection of data
         df = df[df['mean_ref1_multimaper_fraction']>=int(wildcards.m_cutoff)/100]
         df = df[df['cluster1']==df['cluster1']]
         df = df[df['cluster1']!='Nan']
@@ -277,27 +280,88 @@ rule multimapper_cluster:
 
         for c1, gdf in df.groupby('cluster1'):
             print(c1)
-            print(clusters)
+            print("Available clusters: "+str(clusters))
             print(gdf)
 
 
             max_shared_cluster = gdf.sort_values('mean_ref1_multimaper_fraction', ascending=False, inplace=False)['cluster2'].to_list()[0]
             print('max', max_shared_cluster)
             for j,cluster in enumerate(clusters):
+                # Here make a match of indexes
                 if c1 in cluster:
                     id1 = j
                     cluster1 = cluster
                 if max_shared_cluster in cluster:
                     id2 = j
                     cluster2 = cluster
-            print(id1,id2)
+            print("index1:"+str(id1)+" index2:"+str(id2))
             print(clusters[id1])
             print(clusters[id2])
+            print("#############\n")
 
-            del clusters[max(id1,id2)]
-            del clusters[min(id1,id2)]
-            clusters.append(list(set(cluster1+cluster2)))
+            if id1 == id2:
+                # Only one deletion is needed if both indices are the same.
+                if id1 < len(clusters):
+                    del clusters[id1]
+                else:
+                    print(f"Index error: id1 {id1} out of range for clusters of length {len(clusters)}")
+            else:
+                # Remove the element at the higher index first.
+                to_remove_max = max(id1, id2)
+                to_remove_min = min(id1, id2)
+                if to_remove_max < len(clusters) and to_remove_min < len(clusters):
+                    del clusters[to_remove_max]
+                    del clusters[to_remove_min]
+                else:
+                    print(f"Index error: to_remove_max {to_remove_max} or to_remove_min {to_remove_min} out of range for clusters of length {len(clusters)}")
 
+            # After deletion, merge the clusters
+            together = list(set(cluster1 + cluster2))
+            if together not in clusters:
+                clusters.append(together)
+
+        ##################get merged clusters
+        #df = pd.read_csv(input.tsv, sep="\t")
+
+        #cluster_count = len(list(set(df['cluster1'].to_list())))
+        #clusters = list(set(df['cluster1'].to_list()))
+        #clusters = [[str(c)] for c in clusters if str(c)!='nan' and str(c)!='Nan']
+
+        #df = df[df['mean_ref1_multimaper_fraction']>=int(wildcards.m_cutoff)/100]
+        #df = df[df['cluster1']==df['cluster1']]
+        #df = df[df['cluster1']!='Nan']
+
+        #df = df[df['cluster2']==df['cluster2']]
+        #df = df[df['cluster2']!='Nan']
+
+        #df = df.astype({'cluster1': 'str', 'cluster2': 'str'})
+        #df = df[df['cluster1']!=df['cluster2']]
+        #df = df.query("cluster1 != cluster2")
+
+        #print(df.head(40))
+
+        #for c1, gdf in df.groupby('cluster1'):
+            #print(c1)
+            #print(clusters)
+            #print(gdf)
+
+
+            #max_shared_cluster = gdf.sort_values('mean_ref1_multimaper_fraction', ascending=False, inplace=False)['cluster2'].to_list()[0]
+            #print('max', max_shared_cluster)
+            #for j,cluster in enumerate(clusters):
+                #if c1 in cluster:
+                    #id1 = j
+                    #cluster1 = cluster
+                #if max_shared_cluster in cluster:
+                    #id2 = j
+                    #cluster2 = cluster
+            #print(id1,id2)
+            #print(clusters[id1])
+            #print(clusters[id2])
+
+            #del clusters[max(id1,id2)]
+            #del clusters[min(id1,id2)]
+            #clusters.append(list(set(cluster1+cluster2)))
 
         # annotate new clusters
         print(cluster_df.head(20))
