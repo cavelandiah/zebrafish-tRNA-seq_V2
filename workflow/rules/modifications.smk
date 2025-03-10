@@ -69,7 +69,9 @@ rule per_cluster_per_timepoint_position_reference:
             pdf = os.path.join(plot_dir, cluster_name+'.pdf')
             pdfs.append(pdf)
 
-            fig, axs = plt.subplots(figsize=(32,45), nrows=7, ncols=2, gridspec_kw={'width_ratios': [11, 1]})
+            # It's only one timepoint
+            fig, axs = plt.subplots(figsize=(45,7), nrows=1, ncols=2, gridspec_kw={'width_ratios': [11, 1]})
+            #fig, axs = plt.subplots(figsize=(32,45), nrows=7, ncols=2, gridspec_kw={'width_ratios': [11, 1]})
             fig.subplots_adjust(hspace=1)
             plt.rc('axes', titlesize=50)
             plt.rc('axes', labelsize=20)
@@ -80,13 +82,13 @@ rule per_cluster_per_timepoint_position_reference:
                 vmax = 1
                 if plot_column == 'RPM at position':
                     vmax = None
-                sn.heatmap(pivot_df, ax=axs[timepoint-1,0], vmin = 0, vmax = vmax, square = False, linewidths= False, cmap = 'Blues')
+                sn.heatmap(pivot_df, ax=axs[0], vmin = 0, vmax = vmax, square = False, linewidths= False, cmap = 'Blues')
                 count_df = tdf.groupby(['RNAME']).mean(numeric_only=True)
                 for c in count_df.columns:
                     if c != 'RPM':
                         count_df.drop(c,axis=1, inplace=True)
-                sn.heatmap(count_df, ax=axs[timepoint-1,1], vmin = 0, linewidths= False, cmap = 'Blues')
-                axs[timepoint-1,0].set_title(str(timepoint)+': ' + sample_dict[tdf['sample'].to_list()[0]]['timepoint_name'])
+                sn.heatmap(count_df, ax=axs[1], vmin = 0, linewidths= False, cmap = 'Blues')
+                axs[0].set_title(str(timepoint)+': ' + sample_dict[tdf['sample'].to_list()[0]]['timepoint_name'], loc='left')
             fig.savefig(pdf, bbox_inches="tight")
             fig.clf()
             plt.close(fig)

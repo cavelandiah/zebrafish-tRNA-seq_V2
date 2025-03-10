@@ -269,6 +269,127 @@ rule plot_percluster_time_abundance_lineperreference_small_legend:
         call_args =['pdfunite'] + pdfs + [output.anticodon_pdf]
         results = subprocess.run(call_args, capture_output=True)
 
+rule plot_percluster_abundance_samples:
+    """
+    Replace time points in X-axis for genotypes.
+    """
+    input:
+        tsv = 'resources/coverage/pre-filter_{reads_filter}/{ref_set}/coverage_summary_all.tsv',
+        cluster = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}.yaml',
+        cluster_name = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/anticodonbased_clusternames-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}.yaml'
+    output:
+        anticodon_pdf = 'results/abundance/pre-filter_{reads_filter}/{ref_set}/cluster_ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}/{treatment}_per-cluster_abundance_genotypes/summary.pdf'
+    run:
+        import os
+        import pandas as pd
+        import matplotlib.pyplot as plt
+        import yaml
+        import subprocess
+
+        gdf = pd.read_csv(input.tsv, sep="\t",)
+        gdf.drop(columns = [c for c in gdf.columns if config['abundance_score'] not in c and c not in [ 'RNAME']], inplace = True)
+        gdf.drop(columns =[c for c in gdf.columns if c not in['RNAME', 'anticodon'] and sample_dict[c.split(' ')[0]]['treatment']!=wildcards.treatment ], inplace=True)
+
+
+        with open(input.cluster) as file:
+            cluster_dict = yaml.safe_load(file)
+        with open(input.cluster_name) as file:
+            cluster_name_dict = yaml.safe_load(file)
+        gdf['cluster'] = gdf.apply(lambda row: cluster_dict[row['RNAME']] if row['RNAME'] in cluster_dict.keys() else 'unknown', axis =1)
+        gdf['cluster_name'] = gdf.apply(lambda row: cluster_name_dict[row['cluster']] if row['cluster'] in cluster_name_dict.keys() else 'low coverage', axis =1)
+
+#print(gdf.head())
+        gdf.drop(columns = ['cluster'], inplace = True)
+
+        pdfs = []
+        plot_dir = '/'.join(output.anticodon_pdf.split('/')[0:-1])
+
+        plt.rc('font', size=7) #controls default text size
+        plt.rc('axes', titlesize=7) #fontsize of the title
+        plt.rc('axes', labelsize=7) #fontsize of the x and y labels
+        plt.rc('xtick', labelsize=7) #fontsize of the x tick labels
+        plt.rc('ytick', labelsize=7) #fontsize of the y tick labels
+        plt.rc('legend', fontsize=4) #fontsize of the legend
+
+        groups  = gdf.groupby('cluster_name')
+        for cluster, df in groups:
+            # Temp
+            #if cluster != 'Pro-TGG_Pro-CGG_Pro-AGG[0.55_0.29_0.16](47)':
+            #    continue
+            fig, axs = plt.subplots(figsize=(14*CM, 8*CM), nrows= 1, ncols=1)
+
+            plt.rc('font', size=7) #controls default text size
+            plt.rc('axes', titlesize=7) #fontsize of the title
+            plt.rc('axes', labelsize=7) #fontsize of the x and y labels
+            plt.rc('xtick', labelsize=7) #fontsize of the x tick labels
+            plt.rc('ytick', labelsize=7) #fontsize of the y tick labels
+            plt.rc('legend', fontsize=4) #fontsize of the legend
+
+            df.drop(columns=['cluster_name'], inplace = True)
+            df['RNAME'] = df.apply(lambda row: row['RNAME'].split('(')[0], axis =1)
+            df.set_index('RNAME',inplace=True)
+            df = df.transpose()
+            df.reset_index(inplace = True)
+
+            df['raw_fastq'] = df.apply(lambda row: row['index'].split(' ')[0], axis = 1)
+            df['time'] = df.apply(lambda row: int(sample_dict[row['raw_fastq']]['timepoint']), axis = 1)
+            df['name'] = df.apply(lambda row: sample_dict[row['raw_fastq']]['timepoint_name'], axis = 1)
+            labels_order = df['name'].to_list()
+
+            df['name'] = pd.Categorical(df['name'], categories=labels_order, ordered=True)
+            group_df = df.groupby('name').mean(numeric_only=True)
+            group_df.reset_index(inplace = True)
+
+            labels = group_df['name'].to_list()
+            labels = sorted(set(labels), key=lambda x: labels_order.index(x) if x in labels_order else len(labels_order))
+            group_df.set_index('name', inplace = True)
+            group_df.plot(ax = axs, c = '0.8',legend = False, linewidth=0.75)
+
+            for col in group_df.columns:
+                if group_df[col].max()< config['abundance_single_ref_cutoff']:
+                    group_df.drop(columns = [col], inplace=True)
+
+            axs.set_title(cluster.split('[')[0].replace('_', '/'))
+
+            if len(group_df.columns) > 0:
+                group_df.plot( ax = axs, legend = False,  linewidth=0.75)
+
+            axs.set_ylim(0,None)
+            axs.set_yticks(axs.get_yticks())
+            axs.set_yticklabels(["{:.3f}".format(l) for l in axs.get_yticks()])
+
+            axs.set_xticks(range(len(labels)))
+            axs.set_xticklabels(labels, rotation=90)
+            plt.tight_layout()
+            plt.subplots_adjust(bottom=0.4, right=0.8, left=0.2)
+
+            axs.set_ylabel('fraction of reads')
+            axs.set_xlabel(None)
+            handles, labels = axs.get_legend_handles_labels()
+
+            new_labels= []
+            new_handles = []
+            for i,h in enumerate(handles):
+                if h.get_color() != '0.8':
+                    new_labels.append(labels[i])
+                    new_handles.append(h)
+            print(cluster, len(new_handles))
+            if len(new_handles) > 6:
+                axs.legend(new_handles, new_labels, bbox_to_anchor=(1.05, 1), loc="upper left")
+            else:
+                axs.legend(new_handles, new_labels, bbox_to_anchor=(1.05, 1), loc="upper left")
+
+            fig_path = os.path.join(plot_dir, cluster + '_test.pdf')
+            pdfs.append(fig_path)
+
+            fig.savefig(fig_path)
+            plt.close("all")
+
+        pdfs.sort()
+        call_args =['pdfunite'] + pdfs + [output.anticodon_pdf]
+        results = subprocess.run(call_args, capture_output=True)
+
+
 
 rule plot_abundance_boxplots_cluster:
     input:
@@ -623,15 +744,20 @@ rule get_all_abundance_plots:
         #'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/BS_per-cluster_time_abundance_scatter/summary.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-2-mm-50_DM/DM_per-cluster_time_abundance_scatter/summary.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-2-mm-50_DM/MOCK_per-cluster_time_abundance_scatter/summary.pdf',
+        'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-4-mm-50_DM/MOCK_per-cluster_time_abundance_scatter/summary.pdf',
         #'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-2-mm-50_DM/BS_per-cluster_time_abundance_scatter/summary.pdf',
         # abundance line plots for each reference per cluster
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/DM_per-cluster_time_abundance_line-per-ref/summary.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/DM_per-cluster_time_abundance_line-per-ref-smaller-legend/summary.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/MOCK_per-cluster_time_abundance_line-per-ref/summary.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/MOCK_per-cluster_time_abundance_line-per-ref-smaller-legend/summary.pdf',
+        ## Genotypes in x-axis
+        'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/DM_per-cluster_abundance_genotypes/summary.pdf',
+        'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-4-mm-50_DM/DM_per-cluster_abundance_genotypes/summary.pdf',
         #'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/BS_per-cluster_time_abundance_line-per-ref/summary.pdf',
         #'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/BS_per-cluster_time_abundance_line-per-ref-smaller-legend/summary.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-4-mm-50_DM/DM_per-cluster_time_abundance_line-per-ref-smaller-legend/summary.pdf',
+        'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-3-mm-50_DM/DM_per-cluster_time_abundance_line-per-ref-smaller-legend/summary.pdf',
         'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-2-mm-50_DM/DM_per-cluster_time_abundance_line-per-ref-smaller-legend/summary.pdf',
         # anticodon grouped plots
         #'results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/anticodon/all_refs/summary.pdf',

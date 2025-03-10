@@ -147,7 +147,7 @@ rule coverage_plots_per_group_sample:
             if wildcards.treatment == "DM":
                 subfigures = fig.subfigures(3, 3, hspace=0.0)
             elif wildcards.treatment == "MOCK":
-                subfigures = fig.subfigures(3, 5, hspace=0.0)
+                subfigures = fig.subfigures(3, 3, hspace=0.0)
             fig_path = os.path.join(plot_dir, cluster_name + ".pdf")
             pdfs.append(fig_path)
 
@@ -211,7 +211,7 @@ rule coverage_plots_per_group_sample:
                         if replicate-1 == 2:
                             timepoint += 1
                     elif wildcards.treatment == "MOCK":
-                        if replicate-1 == 3:
+                        if replicate-1 == 2:
                             timepoint += 1
 
             fig.savefig(fig_path)
