@@ -572,6 +572,115 @@ rule plot_abundance_scatterplots_cluster:
         call_args =['pdfunite'] + pdfs + [output.cluster_pdf]
         results = subprocess.run(call_args, capture_output=True)
 
+rule plot_abundance_scatterplots_cluster_OLD:
+    input:
+        tsv = 'resources/coverage/pre-filter_{reads_filter}/{ref_set}/coverage_summary_all.tsv',
+        cluster = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}.yaml',
+        cluster_name = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/anticodonbased_clusternames-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}.yaml'
+    output:
+        cluster_pdf = 'results/abundance/pre-filter_{reads_filter}/{ref_set}/cluster_ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}/{treatment}_per-cluster_time_abundance_scatter/summary.pdf'
+    run:
+        # Author: Maria Waldl • code@waldl.org
+        # Version: 2024-01-24
+        import pandas as pd
+        import yaml
+        import matplotlib.pyplot as plt
+        import subprocess
+
+        df = pd.read_csv(input.tsv, sep="\t",)
+        df.drop(columns = [c for c in df.columns if config['abundance_score'] not in c and c != 'RNAME'], inplace = True)
+        df.drop(columns =[c for c in df.columns if c not in['RNAME', 'anticodon'] and sample_dict[c.split(' ')[0]]['treatment']!=wildcards.treatment ], inplace=True)
+
+
+        with open(input.cluster) as file:
+            cluster_dict = yaml.safe_load(file)
+        with open(input.cluster_name) as file:
+            cluster_name_dict = yaml.safe_load(file)
+        df['cluster'] = df.apply(lambda row: cluster_dict[row['RNAME']] if row['RNAME'] in cluster_dict.keys() else 'unknown', axis =1)
+        df['cluster_name'] = df.apply(lambda row: cluster_name_dict[row['cluster']] if row['cluster'] in cluster_name_dict.keys() else 'low coverage', axis =1)
+
+        #print(df.head())
+        df.drop(columns = ['cluster', 'RNAME'], inplace = True)
+        #df.reset_index(inplace = True)
+        df = df.groupby('cluster_name').sum()
+        df.reset_index(inplace = True)
+        df.set_index('cluster_name',inplace=True)
+        df = df.transpose()
+        df.reset_index(inplace = True)
+        df['raw_fastq'] = df.apply(lambda row: row['index'].split(' ')[0], axis = 1)
+        df['time'] = df.apply(lambda row: int(sample_dict[row['raw_fastq']]['timepoint']), axis = 1)
+        df['name'] = df.apply(lambda row: sample_dict[row['raw_fastq']]['timepoint_name'], axis = 1)
+        #df.drop(columns = ['index', 'time'], inplace = True)
+        df.sort_values('time', inplace = True)
+        labels = df['name'].to_list()
+        labels = sorted(set(labels), key=labels.index)
+        group_df = df.groupby('time').mean(numeric_only=True)
+        group_df.reset_index(inplace = True)
+        group_df.sort_values('time', inplace = True)
+        group_df.set_index('time')
+
+
+
+        plot_symbols = config['replicate_markes']
+        df['replicate_symbol'] = df.apply(lambda row: plot_symbols[int(sample_dict[row['raw_fastq']]['replicate'])-1], axis = 1)
+
+        pdfs = []
+        plot_dir = '/'.join(output.cluster_pdf.split('/')[0:-1])
+
+        plt.rc('font', size=7) #controls default text size
+        plt.rc('axes', titlesize=7) #fontsize of the title
+        plt.rc('axes', labelsize=7) #fontsize of the x and y labels
+        plt.rc('xtick', labelsize=7) #fontsize of the x tick labels
+        plt.rc('ytick', labelsize=7) #fontsize of the y tick labels
+        plt.rc('legend', fontsize=7) #fontsize of the legend
+
+
+        for col in list(group_df.columns):
+            if col in ['time', 'replicate_symbol']:
+                continue
+
+
+            fig, axs = plt.subplots(figsize=(6*CM, 3.3*CM), nrows= 1, ncols=1, layout = 'tight')
+            #group_df[col] = group_df[col]*1000000
+            #df[col] = df[col]*1000000
+
+
+            plt.rc('font', size=7) #controls default text size
+            plt.rc('axes', titlesize=7) #fontsize of the title
+            plt.rc('axes', labelsize=7) #fontsize of the x and y labels
+            plt.rc('xtick', labelsize=7) #fontsize of the x tick labels
+            plt.rc('ytick', labelsize=7) #fontsize of the y tick labels
+            plt.rc('legend', fontsize=7) #fontsize of the legend
+
+            group_df.plot(x = 'time', y=col,  ax = axs, c = '0.35', linewidth = 0.75)
+            #print(axs.get_yticks())
+            ylim = group_df[col].max()*1.2
+            for marker, rep_df in df.groupby('replicate_symbol'):
+                if rep_df[col].max()*1.1>ylim:
+                    ylim = rep_df[col].max()*1.15
+                rep_df.plot.scatter(x = 'time', y = col,  ax = axs, alpha = 0.6, marker = marker, s=7, c='0.9', edgecolors='black',  facecolors= None, linewidths=0.6)
+
+            axs.set_ylim(0, ylim)
+            axs.set_yticks(axs.get_yticks())
+            axs.set_yticklabels(["{:.3f}".format(l) for l in  axs.get_yticks()])#, max_ylabel_len)
+            axs.set_ylabel('fraction of reads')
+            axs.set_xlabel(None)
+            axs.set_xticks(group_df['time'].to_list())
+            #CAVH
+            #axs.set_xticklabels([l.replace(',', ',\n') for l in labels], rotation = 90)
+            axs.get_legend().remove()
+            axs.set_title(col.split('[')[0].replace('_', '/'))
+
+            fig_path = os.path.join(plot_dir, col + '.pdf')
+            pdfs.append(fig_path)
+
+            fig.savefig(fig_path)
+            plt.close("all")
+
+        pdfs.sort()
+        call_args =['pdfunite'] + pdfs + [output.cluster_pdf]
+        results = subprocess.run(call_args, capture_output=True)
+
 
 
 
