@@ -160,9 +160,28 @@ ref_set: 'selected'
 #ref_set: 'manual'
 
 # Inosine anticodons based on Rappol et. al, 2024
-inosine_no_filter: []
+inosine_no_filter: ['Ala-AGC','Arg-ACG','Ile-AAT','Leu-AAG',
+                    'Pro-AGG','Ser-AGA','Thr-AGT','Val-AAC']
 # Anticodons with G in position 34:
-g34_filter: []
+#Cys GCA
+#Asn GTT
+#Phe GAA
+#Tyr GTA
+#Gly GCC
+#Asp GTC
+#Asn GTT
+#Cys GCA
+#Asp GTC
+#Tyr GTA
+#Asn GTT
+#Ser GCT
+#Pro GGG
+#Gly GCC
+#Phe GAA
+#Tyr GTA
+#His GTG
+
+g34_filter: ['Pro-GGG']
 
 # config pca plots
 #-----------------

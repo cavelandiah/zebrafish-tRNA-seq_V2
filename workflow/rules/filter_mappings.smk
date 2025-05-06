@@ -492,12 +492,17 @@ rule get_min_cov_refs:
         df = pd.read_csv(input.cov_sum, sep="\t")
 
         # Anticodons to skip threshold filtering
-        inosine_no_filter = set(config.get('inosine_no_filter', []))  # Based on Rappol et. al, 2024
+        inosine_no_filter = set(config.get('inosine_no_filter', [])) # Based on Rappol et. al, 2024
+        # Avoid those: G in position 34
+        g34_filter = set(config.get('g34_filter'),[])
 
         refs = []
         for criterium, cutoff in config['min_coverage_per_ref']:
             # Build mask: either passes threshold OR is in no_filter
-            mask = (df[criterium] >= cutoff) | (df['anticodon'].isin(inosine_no_filter))
+            first_cond = (df[criterium] >= cutoff) | (df['anticodon'].isin(inosine_no_filter))
+            # NOT in g34_filter
+            exclude_cond = ~df['anticodon'].isin(g34_filter)
+            mask = first_cond & exclude_cond
             selected = df.loc[mask, 'RNAME'].to_list()
             refs += selected
         refs = list(set(refs))
