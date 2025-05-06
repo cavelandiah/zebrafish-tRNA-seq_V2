@@ -1,5 +1,8 @@
 configfile: "config/config.yaml"
 
+# Changes on Apr 6:
+# We build a combined approach, were calculated the references using the expression patterns of
+# this experiment and then we incorporated those references with annotated Inosines at position 34.
 import pandas as pd
 
 samples_df = pd.read_csv(config["samples_tsv"], sep="\s+")
@@ -72,8 +75,8 @@ include: "rules/qc.smk"
 rule run_all:
     input:
         # Running this with -c4 is demanding for server: too many download request
-        'resources/references/all_refs.fa', #CAVH
-        'resources/references/selected_refs.fa', #CAVH
+        #'resources/references/all_refs.fa', #CAVH
+        #'resources/references/selected_refs.fa', #CAVH
         'resources/references/alignment/'+config['ref_set']+'_tRNAs.fa_sorted.fa',
         'resources/references/alignment/'+config['ref_set']+'_tRNAs.fa',
         'qc/cluster/'+config['ref_set']+'/editdist_hist.pdf',

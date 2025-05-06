@@ -454,6 +454,29 @@ rule get_min_coverage_summary_with_max:
 
 
 
+#rule get_min_cov_refs_OLD:
+    #input:
+        #cov_sum = 'resources/coverage/pre-filter_{reads_filter}/raw/min_coverage_summary_DM-with-max.tsv'
+    #output:
+        #keep_refs = 'resources/min_coverage_refs/pre-filter_{reads_filter}/min_cov_refs.yaml'
+    #run:
+        ## Author: Maria Waldl • code@waldl.org
+        ## Version: 2024-01-24
+        #import pandas as pd
+        #import yaml
+        #df = pd.read_csv(input.cov_sum, sep="\t")
+        #refs = []
+
+        #for criterium, cutoff in config['min_coverage_per_ref']:
+            #selected = df[df[criterium]>=cutoff]['RNAME'].to_list()
+            #print(criterium, cutoff, len(selected))
+            #refs += selected
+        #refs = list(set(refs))
+        #with open(output.keep_refs, 'w') as file:
+            #outputs = yaml.dump(refs, file)
+        #print(len(df))
+        #print( len(refs))
+
 rule get_min_cov_refs:
     input:
         cov_sum = 'resources/coverage/pre-filter_{reads_filter}/raw/min_coverage_summary_DM-with-max.tsv'
@@ -461,21 +484,27 @@ rule get_min_cov_refs:
         keep_refs = 'resources/min_coverage_refs/pre-filter_{reads_filter}/min_cov_refs.yaml'
     run:
         # Author: Maria Waldl • code@waldl.org
-        # Version: 2024-01-24
+        # Version: 2025-05-06 (modified by CAVH)
         import pandas as pd
         import yaml
-        df = pd.read_csv(input.cov_sum, sep="\t")
-        refs = []
 
+        # Read the summary
+        df = pd.read_csv(input.cov_sum, sep="\t")
+
+        # Anticodons to skip threshold filtering
+        inosine_no_filter = set(config.get('inosine_no_filter', []))  # Based on Rappol et. al, 2024
+
+        refs = []
         for criterium, cutoff in config['min_coverage_per_ref']:
-            selected = df[df[criterium]>=cutoff]['RNAME'].to_list()
-            print(criterium, cutoff, len(selected))
+            # Build mask: either passes threshold OR is in no_filter
+            mask = (df[criterium] >= cutoff) | (df['anticodon'].isin(inosine_no_filter))
+            selected = df.loc[mask, 'RNAME'].to_list()
             refs += selected
         refs = list(set(refs))
         with open(output.keep_refs, 'w') as file:
-            outputs = yaml.dump(refs, file)
-        print(len(df))
-        print( len(refs))
+            yaml.dump(refs, file)
+        print(f"Total rows in summary: {len(df)}")
+        print(f"Total refs kept: {len(refs)}")
 
 rule get_raw_mapped_selected:
     input:

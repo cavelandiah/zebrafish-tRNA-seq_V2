@@ -159,8 +159,10 @@ ref_set: 'selected'
 #ref_set: 'raw'
 #ref_set: 'manual'
 
-
-
+# Inosine anticodons based on Rappol et. al, 2024
+inosine_no_filter: []
+# Anticodons with G in position 34:
+g34_filter: []
 
 # config pca plots
 #-----------------
