@@ -75,8 +75,8 @@ include: "rules/qc.smk"
 rule run_all:
     input:
         # Running this with -c4 is demanding for server: too many download request
-        #'resources/references/all_refs.fa', #CAVH
-        #'resources/references/selected_refs.fa', #CAVH
+        'resources/references/all_refs.fa', #CAVH
+        'resources/references/selected_refs.fa', #CAVH
         'resources/references/alignment/'+config['ref_set']+'_tRNAs.fa_sorted.fa',
         'resources/references/alignment/'+config['ref_set']+'_tRNAs.fa',
         'qc/cluster/'+config['ref_set']+'/editdist_hist.pdf',
