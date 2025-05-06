@@ -494,7 +494,7 @@ rule get_min_cov_refs:
         # Anticodons to skip threshold filtering
         inosine_no_filter = set(config.get('inosine_no_filter', [])) # Based on Rappol et. al, 2024
         # Avoid those: G in position 34
-        g34_filter = set(config.get('g34_filter'),[])
+        g34_filter = set(config.get('g34_filter', []))
 
         refs = []
         for criterium, cutoff in config['min_coverage_per_ref']:
