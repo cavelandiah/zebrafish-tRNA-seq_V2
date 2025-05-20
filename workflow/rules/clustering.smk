@@ -498,11 +498,26 @@ rule get_cluster_names:
         df.reset_index(inplace = True)
 
         cluster_names = {}
+        # The problem is with Clusters that were annotated as Nan
+        # as a product of per_ref_nt_count in coverage.smk
+        # Get rid of rows with 'Nan' in cluster column
+        mask = df['cluster'].notna() & (df['cluster'] != 'Nan')
+        df = df[mask]
+        
         for cluster, gdf in df.groupby('cluster'):
-            print(cluster)
+            print(f'{cluster}')
 
-            cluster_name = cluster_name_dict[cluster]
-            print(cluster_name)
+            cluster_name = None
+            if str(cluster) == "Nan":
+                print(f"{cluster} with NAn")
+                cluster_name = 'Nan'
+            else:
+                if int(cluster) in cluster_name_dict:
+                    cluster_name = cluster_name_dict[int(cluster)]
+                    print(cluster_name)
+                else:
+                    print("DONOTEXITS!")
+                    sys.exit()
             codon_aa_dict = {}
             codon_info = cluster_name.split('[')[0]
             codon_info = codon_info.split('_')

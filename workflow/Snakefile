@@ -4,6 +4,9 @@ configfile: "config/config.yaml"
 # We build a combined approach, were calculated the references using the expression patterns of
 # this experiment and then we incorporated those references with annotated Inosines at position 34.
 import pandas as pd
+import matplotlib.pyplot as plt
+plt.switch_backend('agg')
+
 
 samples_df = pd.read_csv(config["samples_tsv"], sep="\s+")
 sample_name_dict = samples_df.drop_duplicates(subset='timepoint').set_index('timepoint').to_dict(orient="index")

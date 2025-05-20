@@ -175,6 +175,9 @@ rule per_ref_nt_count:
             cluster = 'Nan'
             if name in cluster_dict.keys():
                 cluster = cluster_dict[name]
+            else:
+                print(f"{name} not found!")
+                #sys.exit()
             nt_count_df_transposed['cluster'] = cluster
 
 
