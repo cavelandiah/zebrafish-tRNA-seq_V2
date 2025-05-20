@@ -220,6 +220,7 @@ rule cluster_by_editdist:
 
 rule multimapper_cluster:
     input:
+        # multimappers.smk: summarize_multimappers_between_editdist_clusters
         tsv = 'resources/multimappers/pre-filter_{reads_filter}/{ref_set}/cluster-editdist-{e_cutoff}_multimappers_between_clusters_{treatment}.tsv',
         cluster_names = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusters-editdist-{e_cutoff}.yaml',
         abundance_tsv = 'resources/coverage/pre-filter_{reads_filter}/{ref_set}/min_coverage_summary_DM.tsv',
@@ -234,6 +235,7 @@ rule multimapper_cluster:
     run:
         # Author: Maria Waldl • code@waldl.org
         # Version: 2024-01-24
+        # Corrected: 2025-05-20
         import pandas as pd
         import yaml
 
@@ -246,31 +248,48 @@ rule multimapper_cluster:
         cluster_df = cluster_df.astype({'editdist_cluster': 'int'})
 
         # abundance per ref
-        df = pd.read_csv(input.abundance_tsv, sep="\t")
+        usecol=['RNAME','max random fraction']
+        df = pd.read_csv(input.abundance_tsv, sep="\t",usecols=usecol)
         df.set_index('RNAME', inplace = True)
-        for col in df.columns:
-            if col != 'max random fraction':
-                df.drop(columns = [col], inplace = True)
 
+        cluster_df = cluster_df.merge(df, how='outer', left_index=True, right_index = True)
+        cluster_df = cluster_df.dropna(subset=['editdist_cluster','max random fraction'])
 
-        cluster_df = cluster_df.merge(df, how='outer', left_index=True, right_index = True )
+        colums_to_use = ['cluster1','cluster2','mean_ref1_multimaper_fraction']
+        df = pd.read_csv(input.tsv, sep="\t",
+                         keep_default_na=True,
+                         na_values=['Nan','NA'],
+                         skip_blank_lines=True,
+                         dtype={'cluster1':'Int64',
+                                'cluster2':'Int64',
+                                'mean_ref1_multimaper_fraction':'float64'
+                                },
+                         usecols=colums_to_use)
         
-        # Get merged clusters CAVH
-        df = pd.read_csv(input.tsv, sep="\t")
+        #df = pd.read_csv(input.abundance_tsv, sep="\t")
+        #df.set_index('RNAME', inplace = True)
+        #for col in df.columns:
+            #if col != 'max random fraction':
+                #df.drop(columns = [col], inplace = True)
+        #cluster_df = cluster_df.merge(df, how='outer', left_index=True, right_index = True )
+        
+        #df = pd.read_csv(input.tsv, sep="\t")
         cluster_count = len(list(set(df['cluster1'].to_list())))
-        # List creation: TODO: This is wrong because the cluster list is based on 'cluster1'
-        all_clusters = list(set(df['cluster1'].to_list()))
-        #all_clusters = set(df['cluster1'].dropna().tolist()) | set(df['cluster2'].dropna().tolist())
+        all_clusters = list(df['cluster1'].dropna().unique().tolist())
         # Clusters in lists [c]
         clusters = [[str(c)] for c in all_clusters if str(c)!='nan' and str(c)!='Nan']
 
         # Selection of data
         df = df[df['mean_ref1_multimaper_fraction']>=int(wildcards.m_cutoff)/100]
-        df = df[df['cluster1']==df['cluster1']]
-        df = df[df['cluster1']!='Nan']
+        df = df.dropna(subset=['cluster1','cluster2'])
+        ## Selection of data
+        #df = df[df['mean_ref1_multimaper_fraction']>=int(wildcards.m_cutoff)/100]
+        ## Drop all Nan in cluster1
+        #df = df[df['cluster1']==df['cluster1']]
+        #df = df[df['cluster1']!='Nan']
 
-        df = df[df['cluster2']==df['cluster2']]
-        df = df[df['cluster2']!='Nan']
+        #df = df[df['cluster2']==df['cluster2']]
+        #df = df[df['cluster2']!='Nan']
 
         df = df.astype({'cluster1': 'str', 'cluster2': 'str'})
         df = df[df['cluster1']!=df['cluster2']]
@@ -279,13 +298,13 @@ rule multimapper_cluster:
         print(df.head(40))
 
         for c1, gdf in df.groupby('cluster1'):
-            print(c1)
-            print("Available clusters: "+str(clusters))
-            print(gdf)
+            #print(c1)
+            #print("Available clusters: "+str(clusters))
+            #print(gdf)
 
 
             max_shared_cluster = gdf.sort_values('mean_ref1_multimaper_fraction', ascending=False, inplace=False)['cluster2'].to_list()[0]
-            print('max', max_shared_cluster)
+            #print('max', max_shared_cluster)
             for j,cluster in enumerate(clusters):
                 # Here make a match of indexes
                 if c1 in cluster:
@@ -294,10 +313,10 @@ rule multimapper_cluster:
                 if max_shared_cluster in cluster:
                     id2 = j
                     cluster2 = cluster
-            print("index1:"+str(id1)+" index2:"+str(id2))
-            print(clusters[id1])
-            print(clusters[id2])
-            print("#############\n")
+            #print("index1:"+str(id1)+" index2:"+str(id2))
+            #print(clusters[id1])
+            #print(clusters[id2])
+            #print("#############\n")
 
             if id1 == id2:
                 # Only one deletion is needed if both indices are the same.
@@ -364,15 +383,35 @@ rule multimapper_cluster:
             #clusters.append(list(set(cluster1+cluster2)))
 
         # annotate new clusters
-        print(cluster_df.head(20))
-        print(clusters)
-        for e_clust in cluster_df['editdist_cluster'].to_list():
-            match = [i for i, c in enumerate(clusters) if str(int(e_clust)) in c]
-            if match == []:
-                print('m', e_clust)
+        #print(cluster_df.head(20))
+        #print(clusters)
+        
+        # TODO:This part is not used
+        #for e_clust in cluster_df['editdist_cluster'].to_list():
+            #if pd.isna(e_clust):
+                #continue
+            #idx_str = str(int(e_clust))
+            #match = [i for i, c in enumerate(clusters) if idx_str in c]
+            #if not match:
+                #print('m', e_clust)
 
-        cluster_df['cluster'] = cluster_df.apply(lambda row: [i for i, c in enumerate(clusters) if str(int(row['editdist_cluster'])) in c][0] , axis = 1)
+        # TODO: It has a problem when there is no reads mapping here: Nan
+        #cluster_df['cluster'] = cluster_df.apply(lambda row: [i for i, c in enumerate(clusters) if str(int(row['editdist_cluster'])) in c][0] , axis = 1)
+        # Corrected version 
+        # 1. Build a dict: cluster_id_str → cluster_index
+        mapping = {}
+        for idx, cluster in enumerate(clusters):
+            for member in cluster:
+                mapping[member] = idx
 
+        # 2. Convert & map in two vectorized steps
+        cluster_df['clust_str'] = (
+            cluster_df['editdist_cluster']
+            .dropna()
+            .astype(int)
+            .astype(str)
+        )
+        cluster_df['cluster'] = cluster_df['clust_str'].map(mapping)
 
         # write output
 

@@ -144,6 +144,10 @@ def plot_multimappers_between_refs(df, figure_path, pivot_tsv, cluster_map):
 def summarize_multimappers_between_clusters(tsv_files, cluster_name_file, summary_file):
     # Author: Maria Waldl • code@waldl.org
     # Version: 2024-01-24
+    """
+    Summarizing pairwise relationships (shared reads and multimapper fractions) between predefined clusters across 
+    multiple samples, then annotating and ranking those cluster‐pairs by their maximum/average shared metrics.
+    """
 
     with open(cluster_name_file) as file:
         cluster_name_dict = yaml.safe_load(file)
