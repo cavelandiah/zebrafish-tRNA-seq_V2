@@ -140,8 +140,8 @@ rule coverage_plots_per_group_sample:
             fig = plt.figure(figsize=(36, 16), constrained_layout=True)
             cluster_name = group
 
-            if group != "Nan" and int(group) in cluster_name_dict.keys():
-                cluster_name = cluster_name_dict[int(group)]
+            if group != "Nan" and str(group) in cluster_name_dict.keys():
+                cluster_name = cluster_name_dict[str(group)]
             plt.suptitle("cluster: " + cluster_name + "\ntreatment: " + wildcards.treatment)
 
             if wildcards.treatment == "DM":
