@@ -1155,7 +1155,7 @@ rule get_all_mismatch_plots_CAVH:
         # Per-cluster-sample-position 
         expand('results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-cluster_sample-position_heatmap/{treatment}/{tto}/summary.pdf', tto=['positionCoverage','stop','mismatch','stopfraction','mismatchStop'], treatment='DM'),
         # per-high-coverage-ref_modified-position_line-plot: TODO: This is timepoint
-        #expand('results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-high-coverage-ref_modified-position_line-plot/{treatment}/min_cov_'+str(config['min_coverage'])+'/{tto}/summary.pdf', tto=['positionCoverage','stop','mismatch','stopfraction','mismatchStop'], treatment='DM'),
+        expand('results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-3-mm-50_DM/per-high-coverage-ref_modified-position_line-plot/{treatment}/min_cov_'+str(config['min_coverage'])+'/{tto}/summary.pdf', tto=['positionCoverage','stop','mismatch','stopfraction','mismatchStop'], treatment='DM'),
         # per-cluster_sample-position_heatmap
         expand('results/modifications/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/clusters-ed-2-mm-50_DM/per-cluster_sample-position_heatmap/{treatment}/{tto}/summary.pdf', tto=['positionCoverage','stop','mismatch','stopfraction','mismatchStop'], treatment=['DM','MOCK']),
 

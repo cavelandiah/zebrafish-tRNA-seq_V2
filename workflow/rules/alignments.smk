@@ -148,9 +148,11 @@ rule align_min_coverage_refs_to_cm:
 
 rule add_CCA_to_alignment:
     input:
+        #resources/references/alignment/min_raw_abundance_tRNAswithout_CCA.fa
         minimal_coverage_alignment = config['min_raw_abundance_alignment'].replace('.fa', '')+'without_CCA.fa',
         selected_ids = 'resources/min_coverage_refs/pre-filter_'+config['reads_filter']+'/min_cov_refs.yaml',
     output:
+        #resources/references/alignment/min_raw_abundance_tRNAs.fa
         minimal_coverage_alignment = config['min_raw_abundance_alignment'],
         selected_alignment = config['selected_alignment'],
     run:

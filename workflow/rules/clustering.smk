@@ -1,7 +1,7 @@
 # Author: Maria Waldl • code@waldl.org
 # Version: 2024-01-24
 
-rule get ref_edit_dist:
+rule get_ref_edit_dist:
     input:
         fasta = 'resources/references/alignment/{ref_set}_tRNAs.fa'
     output:
