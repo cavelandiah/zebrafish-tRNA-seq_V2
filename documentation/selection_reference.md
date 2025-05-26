@@ -232,6 +232,4 @@ raw_reads_folder:                  # Location of input FASTQ files
 
 - **Hard-coded thresholds**:  
   - `min_coverage_per_ref = 0.0005` (fraction)  
-  - `min_raw_abundance_count_for_alignment = 10` (reads)  
-
-Consider centralizing these parameters in `config.yaml` and documenting their biological rationale.
+  - `min_raw_abundance_count_for_alignment = 10` (reads)
