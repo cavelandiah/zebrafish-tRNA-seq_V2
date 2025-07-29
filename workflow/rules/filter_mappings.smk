@@ -641,21 +641,24 @@ rule get_coverage_per_selected_ref:
         # Version: 2024-01-24
         df_uni = pd.read_csv(
         input.unique,
-        sep="\t",
+        sep=r"\s+",
+        engine='python',
         )
         df_uni = df_uni.groupby(['RNAME']).count()[['SEQ']]
         df_uni.rename(columns={"SEQ": "unique count"}, inplace = True)
 
         df_random =  pd.read_csv(
         input.random,
-        sep="\t",
+        sep=r"\s+",
+        engine='python',
         )
         df_random = df_random.groupby(['RNAME']).count()[['SEQ']]
         df_random.rename(columns={"SEQ": "random count"}, inplace = True)
 
         df_all =  pd.read_csv(
         input.all,
-        sep="\t",
+        sep=r"\s+",
+        engine='python',
         )
         df_all = df_all.groupby(['RNAME']).count()[['SEQ']]
         df_all.rename(columns={"SEQ": "all count"}, inplace = True)

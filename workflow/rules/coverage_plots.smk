@@ -109,7 +109,7 @@ rule coverage_plots_per_group_sample:
         for tsv_file in input.mismatch_tsvs:
             sample = tsv_file.split("/")[-1].replace("_per_cluster.tsv", "")
             #sample = tsv_file.split("/")[-1].replace(".tsv", "").split("_")[0]
-            if sample_dict[sample]["treatment"] != wildcards.treatment:
+            if sample_dict[sample]["treatment"] != wildcards.c_treatment:
                 continue
             df = pd.read_csv(tsv_file, sep="\t")
             df["sample"] = sample
@@ -140,15 +140,15 @@ rule coverage_plots_per_group_sample:
             fig = plt.figure(figsize=(36, 16), constrained_layout=True)
             cluster_name = group
 
-            if group != "Nan" and str(group) in cluster_name_dict.keys():
-                cluster_name = cluster_name_dict[str(group)]
-            plt.suptitle("cluster: " + cluster_name + "\ntreatment: " + wildcards.treatment)
+            if group != "Nan" and group in cluster_name_dict.keys():
+                cluster_name = cluster_name_dict[group]
+            plt.suptitle("cluster: " + str(cluster_name) + "\ntreatment: " + wildcards.treatment)
 
-            if wildcards.treatment == "DM":
+            if wildcards.c_treatment == "DM":
                 subfigures = fig.subfigures(3, 3, hspace=0.0)
-            elif wildcards.treatment == "MOCK":
+            elif wildcards.c_treatment == "MOCK":
                 subfigures = fig.subfigures(3, 3, hspace=0.0)
-            fig_path = os.path.join(plot_dir, cluster_name + ".pdf")
+            fig_path = os.path.join(plot_dir, str(cluster_name) + ".pdf")
             pdfs.append(fig_path)
 
             for timepoint, t_df in g_df.groupby("timepoint"):
@@ -161,6 +161,18 @@ rule coverage_plots_per_group_sample:
                         gridspec_kw={"height_ratios": [8, 1], "hspace": 0.0, "wspace": 0},
                         sharex=True,
                     )
+                    #columnid_color = [
+                        #["a", "#1f77b4", ""],
+                        #["c", "#ff7f0e", ""],
+                        #["g", "#2ca02c", ""],
+                        #["t", "#d62728", ""],
+                        #["-", "grey"   , ""],
+                        #["A", "#aec7e8", ""],
+                        #["C", "#ffbb78", ""],
+                        #["G", "#98df8a", ""],
+                        #["T", "#ff9896", ""],
+                    #]
+                    #nts_to_plot = ["a", "c", "g", "t", "A", "C", "G", "T", "-"]
                     y = [
                         m[0]
                         for m in columnid_color
@@ -176,6 +188,7 @@ rule coverage_plots_per_group_sample:
                         for m in columnid_color
                         if m[0] in sample_df.columns and m[0] in nts_to_plot
                     ]
+                    #Order by ref_pos
                     sample_df.sort_values(by="position", inplace=True, ignore_index=True)
                     sample_df.plot.bar(x="position", y=y, color=color,  stacked=True, ax=axs[0])
                     axs[0].set_ylabel("read count")
@@ -190,6 +203,18 @@ rule coverage_plots_per_group_sample:
                                 lambda row: row[nt] / row["all nts"] if row[nt] > 0 else 0,
                                 axis=1,
                             )
+                    #ref_columnid_color = [
+                        #["ref_A", "#1f77b4"],
+                        #["ref_C", "#ff7f0e"],
+                        #["ref_G", "#2ca02c"],
+                        #["ref_T", "#d62728"],
+                        #["ref_U", "#d62728"],
+                        #["ref_a", "#1f77b4"],
+                        #["ref_c", "#ff7f0e"],
+                        #["ref_g", "#2ca02c"],
+                        #["ref_t", "#d62728"],
+                        #["ref_u", "#d62728"],
+                    #]
                     y = [
                         m[0]
                         for m in ref_columnid_color
@@ -207,10 +232,10 @@ rule coverage_plots_per_group_sample:
                     axs[1].set_ylim(0, 1)
                     axs[1].set_ylabel("references\ncomposition")
                     axs[1].set_xlabel("alignment position (canonical position)")
-                    if wildcards.treatment == "DM":
+                    if wildcards.c_treatment == "DM":
                         if replicate-1 == 2:
                             timepoint += 1
-                    elif wildcards.treatment == "MOCK":
+                    elif wildcards.c_treatment == "MOCK":
                         if replicate-1 == 2:
                             timepoint += 1
 
@@ -229,16 +254,13 @@ rule get_all_coverage_plots:
         'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_DM/color_scheme_mismatch/summary.pdf',
         'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_MOCK/color_scheme_mismatch/summary.pdf',
         #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_mismatch/summary.pdf',
-        'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_DM/color_scheme_stop/summary.pdf',
-        'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_MOCK/color_scheme_stop/summary.pdf',
+        #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_DM/color_scheme_stop/summary.pdf',
         #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_stop/summary.pdf',
         #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_all/summary.pdf',
         #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-3-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_bisulfite/summary.pdf',
-        'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_DM/color_scheme_mismatch/summary.pdf',
-        'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_MOCK/color_scheme_mismatch/summary.pdf',
+        #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_DM/color_scheme_mismatch/summary.pdf',
         #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_mismatch/summary.pdf',
-        'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_DM/color_scheme_stop/summary.pdf',
-        'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_MOCK/color_scheme_stop/summary.pdf',
+        #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_DM/color_scheme_stop/summary.pdf',
         #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_stop/summary.pdf',
         #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_all/summary.pdf',
         #'results/coverage_plots/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/per_cluster-ed-2-mm-50_DM/coverage_plots_per_sample_BS/color_scheme_bisulfite/summary.pdf',

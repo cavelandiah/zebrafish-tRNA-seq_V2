@@ -48,6 +48,8 @@ def anticodonfamily_from_rname(rname):
 
     Needs to be adjusted to naming scheme of reference fasta file.
     """
+    #print(rname)
+    parts = rname.split('(')
     aa = rname.split("(")[1].strip(")")
     aa = aa.replace(")[N]", "")
     aa = aa.replace(")[B]", "")
@@ -77,29 +79,32 @@ include: "rules/qc.smk"
 
 rule run_all:
     input:
+        #expand('resources/coverage/pre-filter_{reads_filter}/raw/min_coverage_summary_DM-with-max.tsv', reads_filter="umi"),
+        #'resources/min_coverage_refs/pre-filter_umi/min_cov_refs_alignment.yaml',
+        #expand('resources/min_coverage_refs/pre-filter_{reads_filter}/min_cov_refs.yaml', reads_filter='umi'),
         # Running this with -c4 is demanding for server: too many download request
         # CAVH: ref_genome.smk
         'resources/references/all_refs.fa', #CAVH
         # CAVH: Get all raw/ files THIS IS TEMPORAL
-        #'resources/coverage/pre-filter_umi/raw/min_coverage_summary_DM-with-max.tsv',
+        ##'resources/coverage/pre-filter_umi/raw/min_coverage_summary_DM-with-max.tsv',
         'resources/references/selected_refs.fa', #CAVH
         # ref_set='selected'
         'resources/references/alignment/'+config['ref_set']+'_tRNAs.fa_sorted.fa',
         # Is the same file as selected_alignment: 'resources/references/alignment/selected_tRNAs.fa'
         'resources/references/alignment/'+config['ref_set']+'_tRNAs.fa',
-        'qc/cluster/'+config['ref_set']+'/editdist_hist.pdf',
+        #'qc/cluster/'+config['ref_set']+'/editdist_hist.pdf',
         # QC
-        expand('qc/fastqc/raw_{sample}.json', sample=SAMPLES),
+        #expand('qc/fastqc/raw_{sample}.json', sample=SAMPLES),
         # This is redundant since it is calculated on step two ('resources/references/selected_refs.fa')
-        expand('resources/filteres-reads/a_{sample}.fastq', sample=SAMPLES),
-        expand('qc/fastqc/a_u_t_q_{sample}.html', sample=SAMPLES),
+        #expand('resources/filteres-reads/a_{sample}.fastq', sample=SAMPLES),
+        #expand('qc/fastqc/a_u_t_q_{sample}.html', sample=SAMPLES),
         # Summary plots: preprocessing and mapping
         'qc/preprocessing_summary/preproccessing.pdf',
         # Here it does the mapping to selected references
         'qc/mapping-summary/mapping-'+config['ref_set']+'.pdf',
         'qc/umi/'+config['ref_set']+'_duplication_rate.pdf',
         'qc/cluster/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/dist_multimapper.pdf',
-        'results/abundance/'+config['reads_filter']+'_'+config['ref_set']+'_pca-done.txt',
+        #'results/abundance/'+config['reads_filter']+'_'+config['ref_set']+'_pca-done.txt',
         ###'results/abundance/umi_selected_pca-done.txt',
         # CAVH: modifications.smk
         #'results/modifications/get_DM_all_plots',

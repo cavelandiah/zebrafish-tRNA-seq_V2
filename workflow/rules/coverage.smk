@@ -9,6 +9,8 @@ rule per_ref_nt_count:
         cluster_map = 'resources/cluster/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}.yaml',
     output:
         tsv =  'resources/coverage_counts/pre-filter_{reads_filter}/{ref_set}/clusters-ed-{e_cutoff}-mm-{m_cutoff}_{c_treatment}/{sample}.tsv'
+    params:
+        sample = lambda wc: wc.get('sample'),
     run:
         # Author: Maria Waldl • code@waldl.org
         # Version: 2024-01-24
@@ -16,8 +18,25 @@ rule per_ref_nt_count:
         import os
         from Bio import SeqIO
         import yaml
+        
+        def correct_cigar(cigar):
+            """
+            context: It assumes that tRNA reference is composed as: tRNA+(N's). When added tail N's, segemehl
+            reports cigar strings with mismatches (X) and not insertions (I) at the end of the sequence. Just
+            replace last X by I.
+            input: CIGAR string
+            output: CIGAR modified string
+            """
+            if cigar.endswith('X'):
+                new_cigar = cigar
+                new_cigar = re.sub(r'X$', 'I', new_cigar)
+                return new_cigar
+            else:
+                return cigar
 
         def get_matched_seq(cigar, seq):
+            # Correct 'I' cigar after getting 'N' on ref.
+            #cigar = correct_cigar(cigar)
             block_types = [i for i in cigar if not i.isdigit()]
             block_sizes = re.split("I|D|M|S|=|X", cigar)[0:-1]
             block_sizes = [int(s) for s in block_sizes]
@@ -69,7 +88,7 @@ rule per_ref_nt_count:
                 rname = record.id.replace('/', '_')
                 seq = str(record.seq)
                 pos_list = [i for i,s in enumerate(seq) if s not in  '.-' ]
-                pos_dict[rname] = (pos_list, len(seq), seq.replace('.', '').replace('_', ''))
+                pos_dict[rname] = (pos_list, len(seq), seq.replace('.', '').replace('-', ''))
             return pos_dict
 
         def alignment_to_canonical_positions_mapper(alignment_fa):
@@ -224,7 +243,9 @@ rule per_ref_nt_count:
 
         df =  pd.concat(data)
         df['reads in sample'] = total_reads
-        print(df.head(180))
+        #df['Experiment'] = params.sample
+        print(params.sample)
+        #print(df.head(180))
         df.to_csv(output.tsv, sep = '\t', index=False)
 
 rule per_cluster_nt_count:

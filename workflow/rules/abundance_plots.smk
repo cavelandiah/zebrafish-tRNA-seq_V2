@@ -884,7 +884,8 @@ rule get_all_abundance_plots_OLD:
 rule get_all_abundance_plots:
     input:
         # heatmaps with timepoint vs cluster for each treatment
-        expand('results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-{e}-mm-{m}_{tto}/{tto}_summary_time-cluster-abundance_heatmap.pdf',e=[2,3], m=[50], tto=['DM', "MOCK"]),
+        #TODO: MISSING MOCK
+        expand('results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-{e}-mm-{m}_{tto}/{tto}_summary_time-cluster-abundance_heatmap.pdf',e=[2,3], m=[50], tto=['DM']),
         ## heatmaps with sample vs cluster for each treatment
         #expand('results/abundance/pre-filter_'+config['reads_filter']+'/'+config['ref_set']+'/cluster_ed-{e}-mm-{m}_{tto}/{tto}_summary_sample-cluster-abundance_heatmap.pdf',e=[2,3], m=[50], tto=['DM', "MOCK"]),
         ## abundance line plots with replicate scatter per cluster
