@@ -109,7 +109,7 @@ rule coverage_plots_per_group_sample:
         for tsv_file in input.mismatch_tsvs:
             sample = tsv_file.split("/")[-1].replace("_per_cluster.tsv", "")
             #sample = tsv_file.split("/")[-1].replace(".tsv", "").split("_")[0]
-            if sample_dict[sample]["treatment"] != wildcards.c_treatment:
+            if sample_dict[sample]["treatment"] != wildcards.treatment:
                 continue
             df = pd.read_csv(tsv_file, sep="\t")
             df["sample"] = sample
@@ -144,9 +144,9 @@ rule coverage_plots_per_group_sample:
                 cluster_name = cluster_name_dict[group]
             plt.suptitle("cluster: " + str(cluster_name) + "\ntreatment: " + wildcards.treatment)
 
-            if wildcards.c_treatment == "DM":
+            if wildcards.treatment == "DM":
                 subfigures = fig.subfigures(3, 3, hspace=0.0)
-            elif wildcards.c_treatment == "MOCK":
+            elif wildcards.treatment == "MOCK":
                 subfigures = fig.subfigures(3, 3, hspace=0.0)
             fig_path = os.path.join(plot_dir, str(cluster_name) + ".pdf")
             pdfs.append(fig_path)
@@ -232,10 +232,10 @@ rule coverage_plots_per_group_sample:
                     axs[1].set_ylim(0, 1)
                     axs[1].set_ylabel("references\ncomposition")
                     axs[1].set_xlabel("alignment position (canonical position)")
-                    if wildcards.c_treatment == "DM":
+                    if wildcards.treatment == "DM":
                         if replicate-1 == 2:
                             timepoint += 1
-                    elif wildcards.c_treatment == "MOCK":
+                    elif wildcards.treatment == "MOCK":
                         if replicate-1 == 2:
                             timepoint += 1
 
