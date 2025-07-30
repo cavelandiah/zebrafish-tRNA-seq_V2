@@ -1,6 +1,7 @@
 
 # Author: Maria Waldl • code@waldl.org
 # Version: 2024-01-24
+# Corrected: 2025-07-30
 
 
 rule raw_fastqc: # only used in qc overview, not for preprocessing before mapping
@@ -57,16 +58,44 @@ rule trim_adapter_only:
                       ]
         subprocess.run(call_args)
 
+rule trim_barcode_3_end:
+    input:
+        fastq = "resources/filteres-reads/a_{sample}.fastq",
+    output:
+        fastq = "resources/filteres-reads/a_b_{sample}.fastq",
+        json = "qc/trimming/a_b_{sample}_cutadapt.json"
+    run:
+        import os
+        import subprocess
+        
+        barcode = sample_dict[wildcards.sample]['barcode'] 
+        barcode3 = barcode.upper()
+        call_args = ['cutadapt',
+                     #'-j '+ str(cores), # number of cores
+                     '-q 10', #3' end quality trimm; before adapter trimming
+                     '-e 0.15', # maximum error rate in adapter
+                     '--minimum-length=17', # use -m 1 if downsteram tools have problems with zero length reads
+                     '-a', barcode3, # 3' adapter
+                     '--discard-untrimmed',
+                     '-o', output.fastq,
+                     #'--info-file=' +  os.path.join(fastp_reports, 'cutadapy_info_'+raw_fastq+'.tsv'),
+                     '--json=' +output.json,
+                     input.fastq,
+                      ]
+        subprocess.run(call_args)
+
+
 rule get_umi:
     input:
-        "resources/filteres-reads/a_{sample}.fastq"
+        "resources/filteres-reads/a_b_{sample}.fastq",
+        #"resources/filteres-reads/a_{sample}.fastq"
     output:
         fastq = "resources/filteres-reads/a_u_{sample,[A-Za-z0-9_]+}.fastq",
         log = "qc/trimming/a_u_{sample}_umi-tools.log"
     shell:
         # Author: Maria Waldl • code@waldl.org
-        # Version: 2024-01-24
-        'umi_tools extract --stdin={input} --extract-method=regex --bc-pattern="(?P<umi_1>.{{3}})([AGCTUN].*)(?P<umi_2>.{{6}})$" -L {output.log} --stdout {output.fastq}'
+        # Corrected: 2025-07-30
+        'umi_tools extract --stdin={input} --extract-method=regex --bc-pattern="^(?P<umi_1>.{3}).+(?P<umi_2>.{6})$" -L {output.log} --stdout {output.fastq}'
 
 
 rule trim_cca: # currently only used for statistics, not in preprocessing for mapping

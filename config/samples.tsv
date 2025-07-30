@@ -1,19 +1,19 @@
-fastq	treatment	timepoint	timepoint_name	replicate    length
-Z1_i3	MOCK	0	MOCK_zf_WT_r1	1    150
-Z1_i4	MOCK	0	MOCK_zf_WT_r2	2    150
-Z1_i6	MOCK	0	MOCK_zf_WT_r3	3    150
-Z1_i7	MOCK	0	MOCK_zf_KO_ctu1_r1	1    150
-Z1_i8	MOCK	0	MOCK_zf_KO_ctu1_r2	2    150
-Z2_i4	MOCK	0	MOCK_zf_KO_ctu1_r3	3    150
-Z2_i6	MOCK	0	MOCK_zf_KO_urm1_r1	1    150
-Z2_i7	MOCK	0	MOCK_zf_KO_urm1_r2	2    150
-Z2_i8	MOCK	0	MOCK_zf_KO_urm1_r3	3    150
-Z3_i3	DM	0	DM_zf_WT_r1	1    150
-Z3_i4	DM	0	DM_zf_WT_r2	2    150
-Z3_i6	DM	0	DM_zf_WT_r3	3    150
-Z3_i7	DM	0	DM_zf_KO_ctu1_r1	1    150
-Z3_i8	DM	0	DM_zf_KO_ctu1_r2	2    150
-Z4_i4	DM	0	DM_zf_KO_ctu1_r3	3    150
-Z4_i6	DM	0	DM_zf_KO_urm1_r1	1    150
-Z4_i7	DM	0	DM_zf_KO_urm1_r2	2    150
-Z4_i8	DM	0	DM_zf_KO_urm1_r3	3    150
+fastq	treatment	timepoint	timepoint_name	replicate	length	barcode
+Z1_i3	MOCK	0	MOCK_zf_WT_r1	1	150	gcata
+Z1_i4	MOCK	0	MOCK_zf_WT_r2	2	150	tctag
+Z1_i6	MOCK	0	MOCK_zf_WT_r3	3	150	tagct
+Z1_i7	MOCK	0	MOCK_zf_KO_ctu1_r1	1	150	actga
+Z1_i8	MOCK	0	MOCK_zf_KO_ctu1_r2	2	150	tgtca
+Z2_i4	MOCK	0	MOCK_zf_KO_ctu1_r3	3	150	tctag
+Z2_i6	MOCK	0	MOCK_zf_KO_urm1_r1	1	150	tagct
+Z2_i7	MOCK	0	MOCK_zf_KO_urm1_r2	2	150	actga
+Z2_i8	MOCK	0	MOCK_zf_KO_urm1_r3	3	150	tgtca
+Z3_i3	DM	0	DM_zf_WT_r1	1	150	gcata
+Z3_i4	DM	0	DM_zf_WT_r2	2	150	tctag
+Z3_i6	DM	0	DM_zf_WT_r3	3	150	tagct
+Z3_i7	DM	0	DM_zf_KO_ctu1_r1	1	150	actga
+Z3_i8	DM	0	DM_zf_KO_ctu1_r2	2	150	tgtca
+Z4_i4	DM	0	DM_zf_KO_ctu1_r3	3	150	tctag
+Z4_i6	DM	0	DM_zf_KO_urm1_r1	1	150	tagct
+Z4_i7	DM	0	DM_zf_KO_urm1_r2	2	150	actga
+Z4_i8	DM	0	DM_zf_KO_urm1_r3	3	150	tgtca
