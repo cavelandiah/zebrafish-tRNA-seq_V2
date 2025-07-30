@@ -84,19 +84,27 @@ rule trim_barcode_3_end:
                       ]
         subprocess.run(call_args)
 
-
 rule get_umi:
     input:
-        "resources/filteres-reads/a_b_{sample}.fastq",
+        fastq = "resources/filteres-reads/a_b_{sample}.fastq",
         #"resources/filteres-reads/a_{sample}.fastq"
     output:
         fastq = "resources/filteres-reads/a_u_{sample,[A-Za-z0-9_]+}.fastq",
-        log = "qc/trimming/a_u_{sample}_umi-tools.log"
-    shell:
-        # Author: Maria Waldl • code@waldl.org
-        # Corrected: 2025-07-30
-        'umi_tools extract --stdin={input} --extract-method=regex --bc-pattern="^(?P<umi_1>.{3}).+(?P<umi_2>.{6})$" -L {output.log} --stdout {output.fastq}'
-
+        log = "qc/trimming/a_u_{sample}_umi-tools.log",
+    run:
+        import os
+        import subprocess
+        
+        pattern="^(?P<umi_1>.{3}).+(?P<umi_2>.{6})$"
+        call_args = ['umi_tools', 
+                     'extract',
+                     '--stdin='+input.fastq,
+                     '--extract-method=regex',
+                     '--bc-pattern='+str(pattern),
+                     '-L', output.log,
+                     '--stdout', output.fastq
+                     ]
+        subprocess.run(call_args)
 
 rule trim_cca: # currently only used for statistics, not in preprocessing for mapping
     input:
