@@ -3,7 +3,7 @@
 
 rule build_segemehl_index:
     input:
-        refs = 'resources/references/{ref_set}_refs.fa'
+        refs = 'resources/references/{ref_set}_refs_N.fa'
     output:
         index = 'resources/index/{ref_set}.idx'
     shell:
@@ -11,7 +11,7 @@ rule build_segemehl_index:
 
 rule build_segemehl_BS_index:
     input:
-        refs = 'resources/references/{ref_set}_refs.fa'
+        refs = 'resources/references/{ref_set}_refs_N.fa'
     output:
         index_ct = 'resources/index/{ref_set}.ctidx',
         index_ga = 'resources/index/{ref_set}.gaidx'
@@ -27,7 +27,7 @@ rule mapping_segemehl:
         fastqT = 'resources/filteres-reads/a_u_t_q_{sample}.fastq',
         #fastqF = 'resources/filteres-reads/a_u_f_q_{sample}.fastq',
         fastq = 'resources/filteres-reads/a_u_q_{sample}.fastq',
-        fasta_files = ['resources/references/{ref_set}_refs.fa'],
+        fasta_files = ['resources/references/{ref_set}_refs_N.fa'],
     output:
         sam = 'resources/mapping/{ref_set}/polyTtrimming_{polyT}/{sample}.sam',
         unmapped_fastq = 'resources/mapping/{ref_set}/polyTtrimming_{polyT}/{sample}_unmapped.fastq',
@@ -36,8 +36,7 @@ rule mapping_segemehl:
         #mem_mb = 500
     threads: 2
     run:
-        # Author: Maria Waldl • code@waldl.org
-        # Version: 2024-01-24
+        # Corrected version: 2025-08-01
         import subprocess
         import pandas as pd
 

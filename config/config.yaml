@@ -117,6 +117,7 @@ poly_T_processing: 'ONtttt'
 #min coverage cutoff after random assignment for getting high coverage refernces
 #-------------------------------------------------------------------------------
 min_coverage_per_ref: [['max max fraction', 0.0005]]
+min_coverage_per_ref_inosine: [['max max fraction', 0.0001]]
 
 #clustering
 #----------

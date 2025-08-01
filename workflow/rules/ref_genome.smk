@@ -472,23 +472,41 @@ rule get_selected_refs:
         min_cov_ids = 'resources/min_coverage_refs/pre-filter_'+config['reads_filter']+'/min_cov_refs.yaml',
         tRNAs_fa = 'resources/references/all_refs.fa'
     output:
-        fasta = 'resources/references/selected_refs.fa'
+        fasta = 'resources/references/selected_refs.fa',
+        fastaN = 'resources/references/selected_refs_N.fa',
+        tRNAs_fa = 'resources/references/all_refs_N.fa'
     run:
-        # Author: Maria Waldl • code@waldl.org
-        # Version: 2024-01-24
+        # Corrected version: 2025-08-01
         import yaml
         from Bio import SeqIO
         from Bio.SeqRecord import SeqRecord
+        from Bio.Seq import Seq
 
         with open(input.min_cov_ids) as file:
             refs = yaml.safe_load(file)
 
+        all_seqs_N = []
         filtered_sequences = []
+        filtered_sequences_N = []
         for record in SeqIO.parse(input.tRNAs_fa, "fasta"):
+            new_record_all = SeqRecord(
+                Seq(str(record.seq) + 'N'),
+                id=record.id,
+                description=record.description
+            )
+            all_seqs_N.append(new_record_all)
             if record.id in refs:
                 filtered_sequences.append(record)
+                new_record = SeqRecord(
+                    Seq(str(record.seq) + 'N'),
+                    id=record.id,
+                    description=record.description
+                )
+                filtered_sequences_N.append(new_record)
 
+        SeqIO.write(all_seqs_N, output.tRNAs_fa, "fasta") # all + N
         SeqIO.write(filtered_sequences, output.fasta, "fasta")
+        SeqIO.write(filtered_sequences_N, output.fastaN, "fasta")
 
 rule remove_CCA_from_manual_refs:
     input:

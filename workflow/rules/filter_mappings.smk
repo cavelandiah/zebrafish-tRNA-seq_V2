@@ -477,14 +477,38 @@ rule get_min_coverage_summary_with_max:
         #print(len(df))
         #print( len(refs))
 
+rule look_inosine_expression:
+    input:
+        cov_sum = 'resources/coverage/pre-filter_{reads_filter}/raw/min_coverage_summary_DM-with-max.tsv',
+    output:
+        keep_inosine_refs = 'resources/min_coverage_refs/pre-filter_{reads_filter}/inosine_expression.yaml',
+    params:
+        min_raw_abundance_count_for_alignment = config['min_raw_abundance_count_for_alignment'][0][1],
+        min_cov_inosine_threshold = config['min_coverage_per_ref_inosine'][0][1],
+    run:
+        import pandas as pd
+        import yaml
+
+        inosine_no_filter = set(config.get('inosine_no_filter', []))
+        df = pd.read_csv(input.cov_sum, sep="\t")
+        df['I34'] = df['anticodon'].apply(lambda x: "Inosine" if x in inosine_no_filter else "Non-Inosine")
+        df_inosine = df[df['I34'] == 'Inosine'].copy()
+        df_filtered = df_inosine[
+            (df_inosine['max all count'] >= int(params.min_raw_abundance_count_for_alignment)) &
+            (df_inosine['max max fraction'] >= float(params.min_cov_inosine_threshold))
+        ]
+        selected_refs = df_filtered['RNAME'].unique().tolist()
+        with open(output.keep_inosine_refs, 'w') as f:
+            yaml.dump(selected_refs, f)
+
+
 rule get_min_cov_refs:
     input:
         cov_sum = 'resources/coverage/pre-filter_{reads_filter}/raw/min_coverage_summary_DM-with-max.tsv'
     output:
-        keep_refs = 'resources/min_coverage_refs/pre-filter_{reads_filter}/min_cov_refs.yaml'
+        keep_refs = 'resources/min_coverage_refs/pre-filter_{reads_filter}/min_cov_refs_temporal.yaml'
     run:
-        # Author: Maria Waldl • code@waldl.org
-        # Version: 2025-05-06 (modified by CAVH)
+        # Corrected version: 2025-05-06 (modified by CAVH)
         import pandas as pd
         import yaml
 
@@ -510,6 +534,43 @@ rule get_min_cov_refs:
             yaml.dump(refs, file)
         print(f"Total rows in summary: {len(df)}")
         print(f"Total refs kept: {len(refs)}")
+
+rule define_final_list_refs:
+    input:
+        keep_inosine_refs = 'resources/min_coverage_refs/pre-filter_{reads_filter}/inosine_expression.yaml',
+        keep_refs = 'resources/min_coverage_refs/pre-filter_{reads_filter}/min_cov_refs_temporal.yaml'
+    output:
+        keep_refs = 'resources/min_coverage_refs/pre-filter_{reads_filter}/min_cov_refs.yaml'
+    run:
+        import yaml
+
+        inosine_no_filter = set(config.get('inosine_no_filter', []))
+        # Load full candidate list
+        with open(input.keep_refs) as f:
+            all_refs = yaml.safe_load(f) or []
+
+        # inosine-filtered list
+        with open(input.keep_inosine_refs) as f:
+            inosine_allowed = set(yaml.safe_load(f) or [])
+
+        final_refs = []
+        for rname in all_refs:
+            pattern = re.search(r'\((.*?)\)', rname)
+            anticodon = pattern.group(1)
+            if anticodon is None:
+                print(f"Warning: RNAME '{rname}' not found in coverage summary. Skipping.")
+                continue
+
+            if anticodon in inosine_no_filter:
+                if rname in inosine_allowed:
+                    final_refs.append(rname)
+            else:
+                final_refs.append(rname)
+
+        # Final list
+        with open(output.keep_refs, 'w') as f:
+            yaml.dump(final_refs, f)
+
 
 rule get_raw_mapped_selected:
     input:

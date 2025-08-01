@@ -92,14 +92,15 @@ rule run_all:
         'resources/references/alignment/'+config['ref_set']+'_tRNAs.fa_sorted.fa',
         # Is the same file as selected_alignment: 'resources/references/alignment/selected_tRNAs.fa'
         'resources/references/alignment/'+config['ref_set']+'_tRNAs.fa',
+        'resources/min_coverage_refs/pre-filter_'+config['reads_filter']+'/inosine_expression.yaml',
         #'qc/cluster/'+config['ref_set']+'/editdist_hist.pdf',
         # QC
-        #expand('qc/fastqc/raw_{sample}.json', sample=SAMPLES),
+        expand('qc/fastqc/raw_{sample}.json', sample=SAMPLES),
         # This is redundant since it is calculated on step two ('resources/references/selected_refs.fa')
-        #expand('resources/filteres-reads/a_{sample}.fastq', sample=SAMPLES),
+        expand('resources/filteres-reads/a_{sample}.fastq', sample=SAMPLES),
         expand('qc/fastqc/a_u_t_q_{sample}.html', sample=SAMPLES),
         # Summary plots: preprocessing and mapping
-        #'qc/preprocessing_summary/preproccessing.pdf',
+        'qc/preprocessing_summary/preproccessing.pdf',
         # Here it does the mapping to selected references
         #'qc/mapping-summary/mapping-'+config['ref_set']+'.pdf',
         #'qc/umi/'+config['ref_set']+'_duplication_rate.pdf',
